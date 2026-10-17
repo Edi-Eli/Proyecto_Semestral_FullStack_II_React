@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <rect width="400" height="250" fill="#17253f"/>
+  <circle cx="120" cy="90" r="38" fill="#f7f2f2"/>
+  <circle cx="280" cy="90" r="38" fill="#f7f2f2"/>
+  <circle cx="120" cy="170" r="38" fill="#c9d4e0"/>
+  <circle cx="280" cy="170" r="38" fill="#c9d4e0"/>
+  <rect x="175" y="70" width="50" height="110" rx="6" fill="#f7f2f2"/>
+  <rect x="188" y="82" width="24" height="86" rx="6" fill="#9fb3c7"/>
+  <text x="200" y="235" font-size="16" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">Seguridad en el taller</text>
+</svg>

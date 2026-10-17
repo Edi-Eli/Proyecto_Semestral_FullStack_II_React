@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+  <rect width="600" height="300" fill="#17253f"/>
+  <rect x="40" y="40" width="220" height="220" rx="12" fill="#2b3e66"/>
+  <text x="150" y="120" font-size="60" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">LM</text>
+  <text x="150" y="180" font-size="18" fill="#c9d4e0" text-anchor="middle" font-family="Arial, sans-serif">Ferretería</text>
+  <rect x="290" y="60" width="270" height="18" rx="9" fill="#c9d4e0"/>
+  <rect x="290" y="92" width="230" height="18" rx="9" fill="#c9d4e0"/>
+  <rect x="290" y="124" width="250" height="18" rx="9" fill="#9fb3c7"/>
+  <rect x="290" y="156" width="210" height="18" rx="9" fill="#9fb3c7"/>
+  <rect x="290" y="188" width="240" height="18" rx="9" fill="#c9d4e0"/>
+  <text x="425" y="245" font-size="16" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">Los Maestros</text>
+</svg>

@@ -1,0 +1,198 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+header{
+    flex-wrap: wrap; 
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 30px;
+    background-color:#17253f;
+    margin:0;
+    padding: 0;
+    
+}
+
+.nav-menu1 ul,
+.nav-menu2 ul {
+    list-style: none;/*con esto quitamos los puntos del nav,ul*/
+    margin: 0;/*elimina los margenes que vienen por defecto*/
+    padding: 0;/*elimina el relleno que viene por defecto*/
+    display: flex;/*pone en horizontal*/
+    gap: 20px;/*Pone el espacio entre los li*/
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    
+}
+
+.nav-menu2 {
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+.nav-menu1 a,
+.nav-menu2 a {
+    text-decoration: none;/*Quita lo subrayado del a*/
+    color: #f7f2f2;/*Pone el color del texto*/
+    font-weight: bold;/*Texto mas Grueso*/
+}
+
+#imagen-logo{
+    width: 200px;
+    margin: 0;
+    padding: 0;
+    }
+
+.img-car{
+    margin: 0;
+    padding: 0;
+    width: 28px; 
+    height: 28px;
+}
+
+
+/*--------------------------Main--------------------------*/
+main { flex: 1; }
+
+.seccion-pro {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.ti-pro{
+    color: #17253f;
+    margin-bottom: 25px;
+    text-align: center;
+    margin: 10px;
+}
+
+.conte-tar-pro {
+    display: grid;              /* Convierte el contenedor en una grilla (filas y columnas) */
+
+    /* Crea columnas automáticas: cada una mide mínimo 200px y máximo 1fr (se reparten el espacio sobrante entre todas).*/
+    /*auto-fit ajusta la cantidad de columnas según el ancho disponible, sin dejar columnas vacías */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  
+    
+    gap: 20px; /* Separación limpia entre tarjetas */
+    padding: 10px;
+}
+
+.tarjeta-pro {
+    background-color: #ffffff;                     /* Color de fondo blanco */
+    border: 1px solid #e1e4e8;                     /* Borde fino */
+    border-radius: 8px;                              /* Redondea las esquinas de la tarjeta */
+    padding: 16px;                                   /* Espacio interno entre el borde y el contenido */
+    text-align: center;                              /* Centra todos los textos e imágenes por defecto */
+
+    /* Sombra suave: 0 en X, 4px hacia abajo, 6px de difuminado y 5% de opacidad negra */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;                                   /* Activa Flexbox permite alinear, ordenar y distribuir el espacio entre los elementos */
+    flex-direction: column;                          /* Apila los elementos (imagen, título, precio, botón) en vertical */
+    justify-content: space-between;                  /* Distribuye el espacio para que el botón siempre quede pegado al fondo */
+}
+
+
+.tarjeta-pro img {
+    width: 100%;                    /* Ocupa el 100% del ancho disponible en la tarjeta */
+    height: 160px;                  /* Altura fija para que todas las fotos se vean del mismo tamaño */
+    object-fit: contain;            /* Ajusta la foto sin deformarla ni recortarla dentro del recuadro */
+    border-radius: 6px;
+    margin-bottom: 12px;            /* Separación debajo de la imagen */
+}
+
+.tarjeta-pro h3 {
+    font-size: 1.1rem;              /* Tamaño de letra ligeramente mayor al normal */
+    color: #030f22;               /* Color azul oscuro para el texto */
+    margin-bottom: 5px;             /* Separación hacia el precio */
+}
+
+.tarjeta-pro .precio {
+    font-size: 1.2rem;              /* Tamaño de letra destacado */
+    font-weight: bold;              /* Texto en negrita */
+    color: #0e1b15;               /* Color texto */
+    margin-bottom: 12px;            /* Separación hacia el botón */
+}
+
+.btn-pro {
+    background-color: #17253f;       /* boton color */
+    color: #ffffff;                  /* Texto boton color */
+    border: none;                      /* Elimina el borde de los botones por defecto */
+    padding: 10px;                     /* Espacio interno arriba y abajo para darle grosor */
+    border-radius: 5px;                /* Esquinas sutilmente redondeadas */
+    font-weight: bold;                 /* Texto en negrita */
+    cursor: pointer;                   /* Cambia la flecha del mouse a una manito indicando que es clickeable */
+}
+
+.btn-pro {
+  background-color: #2b3e66;      /* Cambia el fondo a un azul más claro como respuesta visual */
+}
+
+
+/*--------------------------Footer--------------------------*/
+
+footer {
+    background-color: #17253f;          /* Color de fondo azul oscuro del footer */
+    color: #ffffff;                     /* Color de texto claro, para que contraste con el fondo oscuro */
+    display: flex;                        /* Activa Flexbox: las .footer-col se acomodan en fila */
+    flex-wrap: wrap;                      /* Si no caben todas las columnas en una fila, las que sobran bajan a la siguiente línea */
+    justify-content: space-between;       /* Reparte el espacio sobrante entre las columnas, dejando la primera pegada a la izquierda y la última a la derecha */
+    gap: 20px;                            /* Espacio fijo entre columnas (y entre filas, si hay wrap) */
+    padding: 40px 60px 10px;              /* Relleno interno: 40px arriba, 60px a los lados, 10px abajo */
+    margin-top: auto;                     /* Empuja el footer hacia el fondo cuando el body es flex con flex-direction: column */
+}
+
+.footer-col {
+    flex: 1;                              /* Cada columna crece o se encoge por igual para repartirse el espacio disponible */
+    min-width: 200px;                     /* Ninguna columna baja de 200px de ancho, aunque el espacio sea reducido (esto es lo que fuerza el salto de línea en pantallas chicas) */
+}
+
+.footer-col h4 {
+    margin-bottom: 12px;                  /* Separación debajo del título de cada columna */
+    font-size: 1.1rem;                    /* Tamaño de letra del título, un poco más grande que el texto normal */
+}
+
+.footer-col p {
+    font-size: 0.9rem;                    /* Tamaño de letra ligeramente reducido para los párrafos */
+    line-height: 1.5;                     /* Espacio entre líneas (1.5 veces el tamaño de fuente), mejora la legibilidad en párrafos */
+}
+
+.footer-col ul {
+    list-style: none;                     /* Quita los puntos/bolitas por defecto de la lista */
+} 
+
+.footer-col ul li {
+    margin-bottom: 8px;                   /* Separación vertical entre cada link de la lista */
+}
+
+.footer-col a {
+    color: #f7f2f2;                     /* Los links heredan el mismo color claro que el resto del texto */
+    text-decoration: none;                /* Quita el subrayado por defecto de los links */
+    font-size: 0.9rem;                    /* Mismo tamaño de letra que los párrafos */
+}
+
+.footer-col a:hover {
+    text-decoration: underline;         /* Al pasar el mouse por encima, aparece el subrayado (indica que es clickeable) */
+}
+
+.footer-bottom {
+    flex-basis: 100%;                                       /* Fuerza a que este bloque ocupe TODO el ancho disponible, empujándolo siempre a su propia fila debajo de las columnas */
+    text-align: center;                                     /* Centra el texto de copyright horizontalmente */
+    font-size: 0.8rem;                                      /* Letra más pequeña, típico de textos legales/copyright */
+    padding-top: 20px;                                      /* Separación entre la línea divisoria y el texto */
+    border-top: 1px solid #ffffff33;                      /* borde solo arriba con color*/
+    margin-top: 20px;                                       /* Separación entre las columnas de arriba */
+}
+

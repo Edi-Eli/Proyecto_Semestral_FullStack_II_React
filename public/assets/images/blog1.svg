@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <rect width="400" height="250" fill="#2b3e66"/>
+  <rect x="20" y="20" width="80" height="80" rx="8" fill="#f7f2f2"/>
+  <rect x="120" y="30" width="260" height="14" rx="7" fill="#c9d4e0"/>
+  <rect x="120" y="56" width="210" height="14" rx="7" fill="#c9d4e0"/>
+  <rect x="120" y="82" width="240" height="14" rx="7" fill="#9fb3c7"/>
+  <rect x="20" y="130" width="90" height="90" rx="8" fill="#f7f2f2"/>
+  <rect x="130" y="140" width="240" height="14" rx="7" fill="#c9d4e0"/>
+  <rect x="130" y="166" width="200" height="14" rx="7" fill="#c9d4e0"/>
+  <rect x="130" y="192" width="230" height="14" rx="7" fill="#9fb3c7"/>
+  <text x="200" y="235" font-size="16" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">Mantenimiento de herramientas</text>
+</svg>

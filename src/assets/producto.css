@@ -1,0 +1,96 @@
+header{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 30px;
+    background-color:#17253f;
+    margin:0;
+    padding: 0;
+    
+}
+
+.btn-pro2{
+    background-color: #17253f;       /* boton color */
+    color: #ffffff;                  /* Texto boton color */
+    border: none;                      /* Elimina el borde de los botones por defecto */
+    padding: 10px;                     /* Espacio interno arriba y abajo para darle grosor */
+    border-radius: 5px;                /* Esquinas sutilmente redondeadas */
+    font-weight: bold;                 /* Texto en negrita */
+    cursor: pointer; 
+    
+}
+
+.btn-pro2:hover { background-color: #2b3e66; }
+
+.menu{
+    text-decoration: none;/*Quita lo subrayado del a*/
+    color: #790000;/*Pone el color del texto*/
+    font-weight: bold;/*Texto mas Grueso    */
+}
+
+
+.det-contenedor {
+    display: grid;
+    grid-template-columns: 1fr 1fr;      /* imagen | información */
+    gap: 40px;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.det-contenedor img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #e1e4e8;
+    background-color: #ffffff;
+}
+
+.det-tit {
+    color: #030f22;
+    font-size: 1.8rem;
+    margin: 0 0 5px;
+}
+
+.det-cat {
+    color: #666;
+    margin: 0 0 10px;
+}
+
+.det-precio {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #0e1b15;
+    margin: 0 0 5px;
+}
+
+.det-stock {
+    color: #17253f;
+    font-weight: bold;
+}
+
+.det-contenedor h3 {
+    color: #030f22;
+    margin-bottom: 6px;
+}
+
+
+.acciones {
+display: flex;
+gap: 12px;              /* ↑ sube/baja este valor = más/menos separación */
+justify-content: center;
+margin-top: 8px;
+}
+
+@media (max-width: 700px) {
+    .det-contenedor {
+        grid-template-columns: 1fr;      /* 1 columna en celular */
+    }
+}
+
+
+
+
+
