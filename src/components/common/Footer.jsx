@@ -11,7 +11,9 @@ function Footer() {
         <h4>Enlaces</h4>
         <ul>
           <li><Link to="/productos">Productos</Link></li>
+          <li><Link to="/categorias">Categorías</Link></li>
           <li><Link to="/ofertas">Ofertas</Link></li>
+          <li><Link to="/blogs">Blog</Link></li>
           <li><Link to="/nosotros">Nosotros</Link></li>
           <li><Link to="/contacto">Contacto</Link></li>
         </ul>
