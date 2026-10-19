@@ -1,14 +1,16 @@
-import { crudService, formatearPrecioCLP } from "../services/crudService";
-import { TIPOS_USUARIO, ESTADOS_ORDEN } from "../js/semillas";
+import { getProductos, getUsuarios, getOrdenes, formatearPrecioCLP } from "../data/crudService";
+
+const TIPOS_USUARIO = ["Administrador", "Vendedor", "Cliente"];
+const ESTADOS_ORDEN = ["Completada", "Pendiente", "Rechazada"];
 
 export default function AdminReportes() {
-    const productos = crudService.listProductos();
-    const usuarios = crudService.listUsuarios();
-    const ordenes = crudService.listOrdenes();
+    const productos = getProductos();
+    const usuarios = getUsuarios();
+    const ordenes = getOrdenes();
 
     const totalRecaudado = ordenes
-        .filter((orden) => orden.estado !== "Cancelado")
-        .reduce((acc, orden) => acc + crudService.calcularTotales(orden).total, 0);
+        .filter((orden) => orden.estado !== "Rechazada")
+        .reduce((acc, orden) => acc + Number(orden.total || 0), 0);
 
     const mayorStock = productos.length
         ? productos.reduce((a, b) => (b.stock > a.stock ? b : a))

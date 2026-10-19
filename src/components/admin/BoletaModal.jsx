@@ -1,23 +1,31 @@
-import { crudService, formatearPrecioCLP } from "../../services/crudService";
+import { formatearPrecioCLP } from "../../data/crudService";
 
 export default function BoletaModal({ orden, onCerrar }) {
     if (orden === null) {
         return null;
     }
-    const { subtotal, iva, total } = crudService.calcularTotales(orden);
 
     return (
         <div className="modal-overlay" onClick={onCerrar}>
             <div className="modal-boleta" onClick={(evento) => evento.stopPropagation()}>
                 <div className="boleta-header">
-                    <h2>Boleta {orden.id}</h2>
+                    <h2>Boleta {orden.codigo}</h2>
                     <button type="button" className="btn-admin btn-limpiar" onClick={onCerrar}>
                         Cerrar
                     </button>
                 </div>
 
+                <p><strong>Nro:</strong> #{orden.nro}</p>
                 <p><strong>Fecha:</strong> {orden.fecha}</p>
-                <p><strong>Cliente:</strong> {orden.cliente} ({orden.runCliente})</p>
+                <p>
+                    <strong>Cliente:</strong> {orden.cliente.nombre} {orden.cliente.apellidos} (
+                    {orden.cliente.correo})
+                </p>
+                <p>
+                    <strong>Dirección:</strong> {orden.direccion.calle}
+                    {orden.direccion.depto ? `, Depto ${orden.direccion.depto}` : ""},{" "}
+                    {orden.direccion.comuna}, {orden.direccion.region}
+                </p>
                 <p>
                     <strong>Estado:</strong>{" "}
                     <span className={`badge badge-${orden.estado.toLowerCase()}`}>{orden.estado}</span>
@@ -26,7 +34,6 @@ export default function BoletaModal({ orden, onCerrar }) {
                 <table className="tabla-admin">
                     <thead>
                         <tr>
-                            <th>Codigo</th>
                             <th>Producto</th>
                             <th>Cantidad</th>
                             <th>Precio</th>
@@ -35,21 +42,18 @@ export default function BoletaModal({ orden, onCerrar }) {
                     </thead>
                     <tbody>
                         {orden.items.map((item) => (
-                            <tr key={item.codigo}>
-                                <td>{item.codigo}</td>
+                            <tr key={item.productoId}>
                                 <td>{item.nombre}</td>
                                 <td>{item.cantidad}</td>
                                 <td>{formatearPrecioCLP(item.precio)}</td>
-                                <td>{formatearPrecioCLP(item.cantidad * item.precio)}</td>
+                                <td>{formatearPrecioCLP(item.subtotal)}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
 
                 <div className="boleta-totales">
-                    <p>Subtotal: {formatearPrecioCLP(subtotal)}</p>
-                    <p>IVA (19%): {formatearPrecioCLP(iva)}</p>
-                    <p className="boleta-total">Total: {formatearPrecioCLP(total)}</p>
+                    <p className="boleta-total">Total: {formatearPrecioCLP(orden.total)}</p>
                 </div>
             </div>
         </div>

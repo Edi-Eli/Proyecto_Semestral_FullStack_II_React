@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import hero from '../../assets/hero.png'
 import { getProductos, getCategorias } from '../../data/crudService.js'
 import { useCart } from '../../context/cartContext.js'
 import ProductCard from '../../components/common/ProductCard.jsx'
@@ -12,8 +11,9 @@ export default function Home() {
   return (
     <>
       <section className="seccion-pro text-center">
-        <img src={hero} alt="Ferretería Los Maestros" className="img-fluid rounded mb-3" />
-        <h1 className="ti-pro">Ferretería Los Maestros</h1>
+        <h1 className="ti-pro" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
+          Ferretería Los Maestros
+        </h1>
         <p className="lead">Bienvenido a tu tienda de materiales de construcción y herramientas.</p>
         <Link to="/productos" className="btn-pro text-decoration-none">Ver todos los productos</Link>
       </section>

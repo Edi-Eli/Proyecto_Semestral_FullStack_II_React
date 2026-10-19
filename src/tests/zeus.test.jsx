@@ -4,7 +4,23 @@ import { MemoryRouter } from "react-router-dom";
 import MetricCard from "../components/admin/MetricCard";
 import AdminCriticos from "../admin/AdminCriticos";
 import AdminProductos from "../admin/AdminProductos";
-import { crudService } from "../services/crudService";
+import * as crudService from "../data/crudService";
+
+function producto(numero, stock, stockCritico) {
+    return {
+        id: numero,
+        codigo: `PROD${numero}`,
+        nombre: `Producto ${numero}`,
+        descripcion: "",
+        precio: 1000,
+        enOferta: false,
+        precioOferta: 0,
+        stock,
+        stockCritico,
+        categoriaId: 1,
+        imagen: "",
+    };
+}
 
 describe("zeus", () => {
     beforeEach(() => {
@@ -20,21 +36,18 @@ describe("zeus", () => {
 
     it("AdminCriticos solo muestra productos con stock <= stockCritico", () => {
         localStorage.setItem(
-            "productosAdmin",
-            JSON.stringify([
-                { codigo: "OK1", nombre: "Producto Sano", descripcion: "", precio: 1000, stock: 50, stockCritico: 5, categoria: "Accesorios", imagen: "" },
-                { codigo: "CRI1", nombre: "Producto Critico", descripcion: "", precio: 2000, stock: 2, stockCritico: 5, categoria: "Accesorios", imagen: "" }
-            ])
+            "productos",
+            JSON.stringify([producto(1, 50, 5), producto(2, 2, 5)]),
         );
 
         render(
             <MemoryRouter>
                 <AdminCriticos />
-            </MemoryRouter>
+            </MemoryRouter>,
         );
 
-        expect(screen.getByText("Producto Critico")).toBeInTheDocument();
-        expect(screen.queryByText("Producto Sano")).not.toBeInTheDocument();
+        expect(screen.getByText("Producto 2")).toBeInTheDocument();
+        expect(screen.queryByText("Producto 1")).not.toBeInTheDocument();
     });
 
     it("AdminProductos llama a crudService.createProducto al guardar", () => {
@@ -43,19 +56,19 @@ describe("zeus", () => {
         render(
             <MemoryRouter>
                 <AdminProductos />
-            </MemoryRouter>
+            </MemoryRouter>,
         );
 
-        fireEvent.change(screen.getByLabelText("Codigo producto"), { target: { value: "FER100" } });
+        fireEvent.change(screen.getByLabelText("Código producto"), { target: { value: "FER100" } });
         fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Producto Test" } });
         fireEvent.change(screen.getByLabelText("Precio"), { target: { value: "15000" } });
         fireEvent.change(screen.getByLabelText("Stock"), { target: { value: "10" } });
-        fireEvent.change(screen.getByLabelText("Categoria"), { target: { value: "Accesorios" } });
+        fireEvent.change(screen.getByLabelText("Categoría"), { target: { value: "1" } });
         fireEvent.click(screen.getByText("Guardar producto"));
 
         expect(espia).toHaveBeenCalledTimes(1);
         expect(espia).toHaveBeenCalledWith(
-            expect.objectContaining({ codigo: "FER100", nombre: "Producto Test" })
+            expect.objectContaining({ codigo: "FER100", nombre: "Producto Test" }),
         );
     });
 });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext.js'
 import { useCart } from '../../context/cartContext.js'
@@ -23,29 +23,35 @@ const FORM_INICIAL = {
   indicaciones: '',
 }
 
+// Autocompletado del formulario cuando hay una sesión activa
+function formularioInicial(usuario) {
+  if (!usuario) return FORM_INICIAL
+  const regionEncontrada = regiones.find((r) => r.nombre === usuario.region)
+  return {
+    ...FORM_INICIAL,
+    nombre: usuario.nombre || '',
+    apellidos: usuario.apellidos || '',
+    correo: usuario.correo || '',
+    calle: usuario.direccion || '',
+    region: regionEncontrada ? String(regionEncontrada.id) : '',
+    comuna: usuario.comuna || '',
+  }
+}
+
 export default function Checkout() {
   const { usuarioActivo } = useAuth()
   const { carrito, totalCarrito, limpiarCarrito } = useCart()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState(FORM_INICIAL)
+  const [form, setForm] = useState(() => formularioInicial(usuarioActivo))
   const [errores, setErrores] = useState({})
   const [simularError, setSimularError] = useState(false)
 
-  // Autocompletado cuando hay sesión activa
-  useEffect(() => {
-    if (!usuarioActivo) return
-    const regionEncontrada = regiones.find((r) => r.nombre === usuarioActivo.region)
-    setForm((prev) => ({
-      ...prev,
-      nombre: usuarioActivo.nombre || prev.nombre,
-      apellidos: usuarioActivo.apellidos || prev.apellidos,
-      correo: usuarioActivo.correo || prev.correo,
-      calle: usuarioActivo.direccion || prev.calle,
-      region: regionEncontrada ? String(regionEncontrada.id) : prev.region,
-      comuna: usuarioActivo.comuna || prev.comuna,
-    }))
-  }, [usuarioActivo])
+  const [usuarioPrevio, setUsuarioPrevio] = useState(usuarioActivo)
+  if (usuarioPrevio !== usuarioActivo) {
+    setUsuarioPrevio(usuarioActivo)
+    setForm(formularioInicial(usuarioActivo))
+  }
 
   function manejarCambio(evento) {
     const { name, value } = evento.target

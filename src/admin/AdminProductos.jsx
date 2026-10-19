@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { crudService, formatearPrecioCLP } from "../services/crudService";
 import {
-    requerido,
-    maxCaracteres,
-    minLength,
-    soloEnteros,
-    soloDecimales,
-    minimoValor
-} from "../js/validaciones";
+    getProductos,
+    createProducto,
+    updateProducto,
+    deleteProducto,
+    getCategorias,
+    formatearPrecioCLP,
+} from "../data/crudService";
+import { requerido, maxCaracteres, soloEnteros, soloDecimales } from "../utils/validaciones";
 
 const FORM_VACIO = {
     codigo: "",
@@ -17,40 +17,45 @@ const FORM_VACIO = {
     precio: "",
     stock: "",
     stockCritico: "",
-    categoria: "",
-    imagen: ""
+    categoriaId: "",
+    imagen: "",
 };
+
+function soloDecimalPositivo(valor) {
+    if (!soloDecimales(valor)) return false;
+    return Number(String(valor).replace(",", ".")) >= 0;
+}
 
 function validarCampo(campo, valor) {
     const v = String(valor).trim();
     switch (campo) {
         case "codigo":
-            if (!requerido(v)) return "El codigo es requerido.";
-            if (!minLength(v, 3)) return "El codigo debe tener al menos 3 caracteres.";
+            if (!requerido(v)) return "El código es requerido.";
+            if (v.length < 3) return "El código debe tener al menos 3 caracteres.";
             return "";
         case "nombre":
             if (!requerido(v)) return "El nombre es requerido.";
             if (!maxCaracteres(v, 100)) return "El nombre no puede superar los 100 caracteres.";
             return "";
         case "descripcion":
-            if (v !== "" && !maxCaracteres(v, 500)) return "La descripcion no puede superar los 500 caracteres.";
+            if (v !== "" && !maxCaracteres(v, 500))
+                return "La descripción no puede superar los 500 caracteres.";
             return "";
         case "precio":
             if (!requerido(v)) return "El precio es requerido.";
-            if (!soloDecimales(v)) return "El precio debe ser un numero valido.";
-            if (!minimoValor(v, 0)) return "El precio minimo es 0 (producto FREE).";
+            if (!soloDecimalPositivo(v)) return "El precio debe ser un número mayor o igual a 0.";
             return "";
         case "stock":
             if (!requerido(v)) return "El stock es requerido.";
-            if (!soloEnteros(v)) return "El stock debe ser un numero entero.";
-            if (!minimoValor(v, 0)) return "El stock minimo es 0.";
+            if (!soloEnteros(v)) return "El stock debe ser un número entero.";
+            if (Number(v) < 0) return "El stock mínimo es 0.";
             return "";
         case "stockCritico":
-            if (v !== "" && !soloEnteros(v)) return "El stock critico debe ser un numero entero.";
-            if (v !== "" && !minimoValor(v, 0)) return "El stock critico minimo es 0.";
+            if (v !== "" && !soloEnteros(v)) return "El stock crítico debe ser un número entero.";
+            if (v !== "" && Number(v) < 0) return "El stock crítico mínimo es 0.";
             return "";
-        case "categoria":
-            if (!requerido(v)) return "Debe seleccionar una categoria.";
+        case "categoriaId":
+            if (!requerido(v)) return "Debe seleccionar una categoría.";
             return "";
         default:
             return "";
@@ -58,15 +63,16 @@ function validarCampo(campo, valor) {
 }
 
 export default function AdminProductos() {
-    const [productos, setProductos] = useState(() => crudService.listProductos());
-    const [categorias] = useState(() => crudService.listCategorias());
+    const [productos, setProductos] = useState(() => getProductos());
+    const [categorias] = useState(() => getCategorias());
     const [form, setForm] = useState(FORM_VACIO);
-    const [indiceEditar, setIndiceEditar] = useState(null);
+    const [idEditar, setIdEditar] = useState(null);
     const [errores, setErrores] = useState({});
     const [tocado, setTocado] = useState({});
     const [enviado, setEnviado] = useState(false);
 
-    const mostrarError = (campo) => ((tocado[campo] || enviado) && errores[campo] ? errores[campo] : "");
+    const mostrarError = (campo) =>
+        (tocado[campo] || enviado) && errores[campo] ? errores[campo] : "";
 
     const handleChange = (campo) => (evento) => {
         const valor = evento.target.value;
@@ -74,20 +80,19 @@ export default function AdminProductos() {
         setErrores((anterior) => ({ ...anterior, [campo]: validarCampo(campo, valor) }));
     };
 
-    const handleBlur = (campo) => () => {
-        setTocado((anterior) => ({ ...anterior, [campo]: true }));
-    };
+    const handleBlur = (campo) => () => setTocado((anterior) => ({ ...anterior, [campo]: true }));
 
     const limpiarFormulario = () => {
         setForm(FORM_VACIO);
-        setIndiceEditar(null);
+        setIdEditar(null);
         setErrores({});
         setTocado({});
         setEnviado(false);
     };
 
-    const editarProducto = (indice) => {
-        const producto = productos[indice];
+    const editarProducto = (id) => {
+        const producto = getProductos().find((p) => p.id === Number(id));
+        if (!producto) return;
         setForm({
             codigo: producto.codigo,
             nombre: producto.nombre,
@@ -95,19 +100,20 @@ export default function AdminProductos() {
             precio: String(producto.precio),
             stock: String(producto.stock),
             stockCritico: String(producto.stockCritico),
-            categoria: producto.categoria,
-            imagen: producto.imagen
+            categoriaId: String(producto.categoriaId),
+            imagen: producto.imagen || "",
         });
-        setIndiceEditar(indice);
+        setIdEditar(producto.id);
         setErrores({});
         setTocado({});
         setEnviado(false);
     };
 
-    const eliminarProducto = (indice) => {
-        if (!window.confirm(`Desea eliminar el producto ${productos[indice].nombre}?`)) return;
-        crudService.deleteProducto(indice);
-        setProductos(crudService.listProductos());
+    const eliminarProducto = (id) => {
+        const producto = getProductos().find((p) => p.id === Number(id));
+        if (!window.confirm(`¿Desea eliminar el producto ${producto.nombre}?`)) return;
+        deleteProducto(id);
+        setProductos(getProductos());
     };
 
     const guardarProducto = (evento) => {
@@ -130,21 +136,30 @@ export default function AdminProductos() {
             precio: Number(form.precio.replace(",", ".")),
             stock: Number(form.stock),
             stockCritico: form.stockCritico.trim() === "" ? 0 : Number(form.stockCritico),
-            categoria: form.categoria,
-            imagen: form.imagen.trim()
+            categoriaId: Number(form.categoriaId),
+            imagen: form.imagen.trim(),
+            enOferta: false,
+            precioOferta: 0,
         };
 
-        if (indiceEditar !== null) {
-            crudService.updateProducto(indiceEditar, producto);
+        if (idEditar !== null) {
+            updateProducto(idEditar, producto);
         } else {
-            crudService.createProducto(producto);
+            createProducto(producto);
         }
-        setProductos(crudService.listProductos());
+        setProductos(getProductos());
 
         if (producto.stock <= producto.stockCritico) {
-            window.alert(`El producto ${producto.nombre} tiene stock bajo o critico (${producto.stock} unidades).`);
+            window.alert(
+                `El producto ${producto.nombre} tiene stock bajo o crítico (${producto.stock} unidades).`,
+            );
         }
         limpiarFormulario();
+    };
+
+    const nombreCategoria = (id) => {
+        const cat = categorias.find((c) => c.id === Number(id));
+        return cat ? cat.nombre : "-";
     };
 
     return (
@@ -161,12 +176,12 @@ export default function AdminProductos() {
                 <table className="tabla-admin">
                     <thead>
                         <tr>
-                            <th>Codigo</th>
+                            <th>Código</th>
                             <th>Nombre</th>
-                            <th>Categoria</th>
+                            <th>Categoría</th>
                             <th>Precio</th>
                             <th>Stock</th>
-                            <th>Stock critico</th>
+                            <th>Stock crítico</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -176,21 +191,35 @@ export default function AdminProductos() {
                                 <td colSpan="7">No hay productos registrados.</td>
                             </tr>
                         ) : (
-                            productos.map((producto, indice) => (
-                                <tr key={producto.codigo + indice}>
+                            productos.map((producto) => (
+                                <tr key={producto.id}>
                                     <td>{producto.codigo}</td>
                                     <td>{producto.nombre}</td>
-                                    <td>{producto.categoria}</td>
+                                    <td>{nombreCategoria(producto.categoriaId)}</td>
                                     <td>{formatearPrecioCLP(producto.precio)}</td>
-                                    <td className={producto.stock <= producto.stockCritico ? "stock-bajo" : ""}>
+                                    <td
+                                        className={
+                                            producto.stock <= producto.stockCritico
+                                                ? "stock-bajo"
+                                                : ""
+                                        }
+                                    >
                                         {producto.stock}
                                     </td>
                                     <td>{producto.stockCritico}</td>
                                     <td>
-                                        <button type="button" className="btn-admin btn-editar" onClick={() => editarProducto(indice)}>
+                                        <button
+                                            type="button"
+                                            className="btn-admin btn-editar"
+                                            onClick={() => editarProducto(producto.id)}
+                                        >
                                             Editar
                                         </button>
-                                        <button type="button" className="btn-admin btn-eliminar" onClick={() => eliminarProducto(indice)}>
+                                        <button
+                                            type="button"
+                                            className="btn-admin btn-eliminar"
+                                            onClick={() => eliminarProducto(producto.id)}
+                                        >
                                             Eliminar
                                         </button>
                                     </td>
@@ -202,12 +231,12 @@ export default function AdminProductos() {
             </section>
 
             <section className="seccion-formulario">
-                <h2>{indiceEditar === null ? "Nuevo producto" : "Editar producto"}</h2>
+                <h2>{idEditar === null ? "Nuevo producto" : "Editar producto"}</h2>
 
                 <form onSubmit={guardarProducto} noValidate>
                     <div className="form-admin">
                         <div className="campo-form">
-                            <label htmlFor="codigo-producto">Codigo producto</label>
+                            <label htmlFor="codigo-producto">Código producto</label>
                             <input
                                 type="text"
                                 id="codigo-producto"
@@ -234,7 +263,7 @@ export default function AdminProductos() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="descripcion-producto">Descripcion (opcional)</label>
+                            <label htmlFor="descripcion-producto">Descripción (opcional)</label>
                             <textarea
                                 id="descripcion-producto"
                                 rows="3"
@@ -278,7 +307,7 @@ export default function AdminProductos() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="stock-critico-producto">Stock critico (opcional)</label>
+                            <label htmlFor="stock-critico-producto">Stock crítico (opcional)</label>
                             <input
                                 type="text"
                                 id="stock-critico-producto"
@@ -293,22 +322,22 @@ export default function AdminProductos() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="categoria-producto">Categoria</label>
+                            <label htmlFor="categoria-producto">Categoría</label>
                             <select
                                 id="categoria-producto"
-                                value={form.categoria}
-                                onChange={handleChange("categoria")}
-                                onBlur={handleBlur("categoria")}
-                                className={mostrarError("categoria") ? "input-error" : ""}
+                                value={form.categoriaId}
+                                onChange={handleChange("categoriaId")}
+                                onBlur={handleBlur("categoriaId")}
+                                className={mostrarError("categoriaId") ? "input-error" : ""}
                             >
-                                <option value="">Seleccione una categoria</option>
+                                <option value="">Seleccione una categoría</option>
                                 {categorias.map((categoria) => (
-                                    <option key={categoria.id} value={categoria.nombre}>
+                                    <option key={categoria.id} value={categoria.id}>
                                         {categoria.nombre}
                                     </option>
                                 ))}
                             </select>
-                            <p className="mensaje-error">{mostrarError("categoria")}</p>
+                            <p className="mensaje-error">{mostrarError("categoriaId")}</p>
                         </div>
 
                         <div className="campo-form">
@@ -327,7 +356,11 @@ export default function AdminProductos() {
                             <button type="submit" className="btn-admin btn-guardar">
                                 Guardar producto
                             </button>
-                            <button type="button" className="btn-admin btn-limpiar" onClick={limpiarFormulario}>
+                            <button
+                                type="button"
+                                className="btn-admin btn-limpiar"
+                                onClick={limpiarFormulario}
+                            >
                                 Cancelar
                             </button>
                         </div>

@@ -5,6 +5,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import './assets/main.css'
 import './assets/admin.css'
 import './assets/formularios.css'
+import './assets/producto.css'
+import './assets/carrito.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(

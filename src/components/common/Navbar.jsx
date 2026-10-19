@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext.js'
 import { useCart } from '../../context/cartContext.js'
 import { formatearPrecioCLP, getCategorias } from '../../data/crudService.js'
@@ -8,8 +8,21 @@ function Navbar() {
   const { usuarioActivo, logout } = useAuth()
   const { totalCarrito, cantidadTotalItems } = useCart()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [termino, setTermino] = useState('')
   const [categorias] = useState(() => getCategorias())
+  const [categoriasAbiertas, setCategoriasAbiertas] = useState(false)
+  const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    function cerrarAlClicFuera(evento) {
+      if (dropdownRef.current && !dropdownRef.current.contains(evento.target)) {
+        setCategoriasAbiertas(false)
+      }
+    }
+    document.addEventListener('mousedown', cerrarAlClicFuera)
+    return () => document.removeEventListener('mousedown', cerrarAlClicFuera)
+  }, [])
 
   const claseActivo = ({ isActive }) =>
     isActive ? 'nav-link fw-bold text-warning' : 'nav-link text-white'
@@ -44,22 +57,29 @@ function Navbar() {
           <ul className="nav-menu1">
             <li><NavLink to="/" className={claseActivo}>Home</NavLink></li>
             <li><NavLink to="/productos" className={claseActivo}>Productos</NavLink></li>
-            <li className="dropdown">
+            <li
+              className={`dropdown ${categoriasAbiertas ? 'show' : ''}`}
+              ref={dropdownRef}
+            >
               <NavLink
                 to="/categorias"
                 className={({ isActive }) =>
                   `nav-link dropdown-toggle ${isActive ? 'fw-bold text-warning' : 'text-white'}`
                 }
                 role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
+                aria-expanded={categoriasAbiertas}
+                onClick={() => setCategoriasAbiertas((abierto) => !abierto)}
               >
                 Categorías
               </NavLink>
-              <ul className="dropdown-menu">
+              <ul className={`dropdown-menu ${categoriasAbiertas ? 'show' : ''}`}>
                 {categorias.map((cat) => (
                   <li key={cat.id}>
-                    <Link className="dropdown-item" to={`/categorias/${cat.id}`}>
+                    <Link
+                      className="dropdown-item"
+                      to={`/categorias/${cat.id}`}
+                      onClick={() => setCategoriasAbiertas(false)}
+                    >
                       {cat.nombre}
                     </Link>
                   </li>
@@ -72,16 +92,18 @@ function Navbar() {
             <li><NavLink to="/contacto" className={claseActivo}>Contacto</NavLink></li>
           </ul>
 
-          <form className="d-flex ms-auto me-2" role="search" onSubmit={buscar}>
-            <input
-              type="search"
-              className="form-control form-control-sm"
-              placeholder="Buscar producto..."
-              aria-label="Buscar producto"
-              value={termino}
-              onChange={(e) => setTermino(e.target.value)}
-            />
-          </form>
+          {pathname !== '/productos' && (
+            <form className="d-flex ms-auto me-2" role="search" onSubmit={buscar}>
+              <input
+                type="search"
+                className="form-control form-control-sm"
+                placeholder="Buscar producto..."
+                aria-label="Buscar producto"
+                value={termino}
+                onChange={(e) => setTermino(e.target.value)}
+              />
+            </form>
+          )}
 
           <ul className="nav-menu2">
             <li>

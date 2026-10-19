@@ -246,6 +246,84 @@
     gap: 12px;
 }
 
+/* ---- Dashboard: tarjetas de métricas a color ---- */
+.metric-card {
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card h2 {
+    font-size: 1rem;
+    margin: 0 0 10px;
+    color: inherit;
+}
+
+.metric-card p {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.metric-azul {
+    background-color: #0d6efd;
+}
+
+.metric-verde {
+    background-color: #198754;
+}
+
+.metric-amarillo {
+    background-color: #ffc107;
+    color: #17253f;
+}
+
+/* ---- Dashboard: grilla de accesos rápidos ---- */
+.accesos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.acceso-rapido {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #17253f;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.acceso-rapido:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    color: #17253f;
+}
+
+.acceso-rapido .acceso-icono {
+    font-size: 2rem;
+    line-height: 1;
+    color: #2b3e66;
+}
+
+.acceso-rapido h3 {
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+.acceso-rapido p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #555;
+}
+
 @media (max-width: 768px) {
     body {
         flex-direction: column;

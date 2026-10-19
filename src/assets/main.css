@@ -23,8 +23,8 @@ header{
     
 }
 
-.nav-menu1 ul,
-.nav-menu2 ul {
+.nav-menu1,
+.nav-menu2 {
     list-style: none;/*con esto quitamos los puntos del nav,ul*/
     margin: 0;/*elimina los margenes que vienen por defecto*/
     padding: 0;/*elimina el relleno que viene por defecto*/
@@ -39,6 +39,48 @@ header{
 .nav-menu2 {
     margin-left: auto;
     margin-right: 20px;
+}
+
+/* Dropdown de Categorías: se evita que flex de .nav-menu1 pise estilos de Bootstrap.
+   El menú está oculto por defecto y solo se muestra con la clase .show (controlada en React). */
+.nav-menu1 .dropdown {
+    position: relative;
+}
+
+.nav-menu1 .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    min-width: 10rem;
+    padding: 0.5rem 0;
+    margin: 0;
+    list-style: none;
+    background-color: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    text-align: left;
+}
+
+.nav-menu1 .dropdown-menu.show {
+    display: block;
+}
+
+.nav-menu1 .dropdown-menu .dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    color: #212529;
+    font-weight: normal;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.nav-menu1 .dropdown-menu .dropdown-item:hover {
+    background-color: #e9ecef;
+    color: #17253f;
 }
 
 .nav-menu1 a,

@@ -1,32 +1,39 @@
 import { useState } from "react";
-import { crudService } from "../services/crudService";
-import { requerido, maxCaracteres } from "../js/validaciones";
+import {
+    getCategorias,
+    createCategoria,
+    updateCategoria,
+    deleteCategoria,
+    getProductos,
+} from "../data/crudService";
+import { requerido, maxCaracteres } from "../utils/validaciones";
 
-const FORM_VACIO = { nombre: "", descripcion: "" };
+const FORM_VACIO = { nombre: "", imagen: "" };
 
 function validarCategoria(campo, valor) {
     const v = String(valor).trim();
     if (campo === "nombre") {
-        if (!requerido(v)) return "El nombre de la categoria es requerido.";
+        if (!requerido(v)) return "El nombre de la categoría es requerido.";
         if (!maxCaracteres(v, 50)) return "El nombre no puede superar los 50 caracteres.";
         return "";
     }
-    if (campo === "descripcion") {
-        if (v !== "" && !maxCaracteres(v, 200)) return "La descripcion no puede superar los 200 caracteres.";
+    if (campo === "imagen") {
+        if (v !== "" && !maxCaracteres(v, 200)) return "La ruta de imagen es muy larga.";
         return "";
     }
     return "";
 }
 
 export default function AdminCategorias() {
-    const [categorias, setCategorias] = useState(() => crudService.listCategorias());
+    const [categorias, setCategorias] = useState(() => getCategorias());
     const [form, setForm] = useState(FORM_VACIO);
     const [idEditar, setIdEditar] = useState(null);
     const [errores, setErrores] = useState({});
     const [tocado, setTocado] = useState({});
     const [enviado, setEnviado] = useState(false);
 
-    const mostrarError = (campo) => ((tocado[campo] || enviado) && errores[campo] ? errores[campo] : "");
+    const mostrarError = (campo) =>
+        (tocado[campo] || enviado) && errores[campo] ? errores[campo] : "";
 
     const handleChange = (campo) => (evento) => {
         const valor = evento.target.value;
@@ -34,9 +41,7 @@ export default function AdminCategorias() {
         setErrores((anterior) => ({ ...anterior, [campo]: validarCategoria(campo, valor) }));
     };
 
-    const handleBlur = (campo) => () => {
-        setTocado((anterior) => ({ ...anterior, [campo]: true }));
-    };
+    const handleBlur = (campo) => () => setTocado((anterior) => ({ ...anterior, [campo]: true }));
 
     const limpiarFormulario = () => {
         setForm(FORM_VACIO);
@@ -47,7 +52,7 @@ export default function AdminCategorias() {
     };
 
     const editarCategoria = (categoria) => {
-        setForm({ nombre: categoria.nombre, descripcion: categoria.descripcion });
+        setForm({ nombre: categoria.nombre, imagen: categoria.imagen || "" });
         setIdEditar(categoria.id);
         setErrores({});
         setTocado({});
@@ -55,13 +60,13 @@ export default function AdminCategorias() {
     };
 
     const eliminarCategoria = (categoria) => {
-        const enUso = crudService.listProductos().some((p) => p.categoria === categoria.nombre);
+        const enUso = getProductos().some((p) => Number(p.categoriaId) === Number(categoria.id));
         const mensaje = enUso
-            ? `La categoria ${categoria.nombre} esta en uso por productos. Desea eliminarla igual?`
-            : `Desea eliminar la categoria ${categoria.nombre}?`;
+            ? `La categoría ${categoria.nombre} está en uso por productos. ¿Deseas eliminarla igual?`
+            : `¿Deseas eliminar la categoría ${categoria.nombre}?`;
         if (!window.confirm(mensaje)) return;
-        crudService.deleteCategoria(categoria.id);
-        setCategorias(crudService.listCategorias());
+        deleteCategoria(categoria.id);
+        setCategorias(getCategorias());
     };
 
     const guardarCategoria = (evento) => {
@@ -70,26 +75,29 @@ export default function AdminCategorias() {
 
         const nuevosErrores = {
             nombre: validarCategoria("nombre", form.nombre),
-            descripcion: validarCategoria("descripcion", form.descripcion)
+            imagen: validarCategoria("imagen", form.imagen),
         };
         setErrores(nuevosErrores);
         if (Object.values(nuevosErrores).some((m) => m !== "")) return;
 
         const duplicada = categorias.some(
-            (c) => c.nombre.toLowerCase() === form.nombre.trim().toLowerCase() && c.id !== idEditar
+            (c) => c.nombre.toLowerCase() === form.nombre.trim().toLowerCase() && c.id !== idEditar,
         );
         if (duplicada) {
-            setErrores((anterior) => ({ ...anterior, nombre: "Ya existe una categoria con ese nombre." }));
+            setErrores((anterior) => ({
+                ...anterior,
+                nombre: "Ya existe una categoría con ese nombre.",
+            }));
             return;
         }
 
-        const datos = { nombre: form.nombre.trim(), descripcion: form.descripcion.trim() };
+        const datos = { nombre: form.nombre.trim(), imagen: form.imagen.trim() };
         if (idEditar !== null) {
-            crudService.updateCategoria(idEditar, datos);
+            updateCategoria(idEditar, datos);
         } else {
-            crudService.createCategoria(datos);
+            createCategoria(datos);
         }
-        setCategorias(crudService.listCategorias());
+        setCategorias(getCategorias());
         limpiarFormulario();
     };
 
@@ -104,7 +112,7 @@ export default function AdminCategorias() {
                         <tr>
                             <th>ID</th>
                             <th>Nombre</th>
-                            <th>Descripción</th>
+                            <th>Imagen</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -118,12 +126,20 @@ export default function AdminCategorias() {
                                 <tr key={categoria.id}>
                                     <td>{categoria.id}</td>
                                     <td>{categoria.nombre}</td>
-                                    <td>{categoria.descripcion}</td>
+                                    <td>{categoria.imagen}</td>
                                     <td>
-                                        <button type="button" className="btn-admin btn-editar" onClick={() => editarCategoria(categoria)}>
+                                        <button
+                                            type="button"
+                                            className="btn-admin btn-editar"
+                                            onClick={() => editarCategoria(categoria)}
+                                        >
                                             Editar
                                         </button>
-                                        <button type="button" className="btn-admin btn-eliminar" onClick={() => eliminarCategoria(categoria)}>
+                                        <button
+                                            type="button"
+                                            className="btn-admin btn-eliminar"
+                                            onClick={() => eliminarCategoria(categoria)}
+                                        >
                                             Eliminar
                                         </button>
                                     </td>
@@ -154,24 +170,29 @@ export default function AdminCategorias() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="descripcion-categoria">Descripción (opcional)</label>
+                            <label htmlFor="imagen-categoria">Imagen (opcional)</label>
                             <input
                                 type="text"
-                                id="descripcion-categoria"
+                                id="imagen-categoria"
                                 maxLength="200"
-                                value={form.descripcion}
-                                onChange={handleChange("descripcion")}
-                                onBlur={handleBlur("descripcion")}
-                                className={mostrarError("descripcion") ? "input-error" : ""}
+                                placeholder="/assets/images/..."
+                                value={form.imagen}
+                                onChange={handleChange("imagen")}
+                                onBlur={handleBlur("imagen")}
+                                className={mostrarError("imagen") ? "input-error" : ""}
                             />
-                            <p className="mensaje-error">{mostrarError("descripcion")}</p>
+                            <p className="mensaje-error">{mostrarError("imagen")}</p>
                         </div>
 
                         <div className="botones-form">
                             <button type="submit" className="btn-admin btn-guardar">
                                 Guardar categoría
                             </button>
-                            <button type="button" className="btn-admin btn-limpiar" onClick={limpiarFormulario}>
+                            <button
+                                type="button"
+                                className="btn-admin btn-limpiar"
+                                onClick={limpiarFormulario}
+                            >
                                 Cancelar
                             </button>
                         </div>

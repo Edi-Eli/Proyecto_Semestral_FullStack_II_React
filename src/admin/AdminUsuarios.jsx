@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { TIPOS_USUARIO } from "../js/semillas";
-import { REGIONES, getComunasPorNombre } from "../js/regiones";
-import { crudService } from "../services/crudService";
-import { requerido, maxCaracteres, minLength, esCorreoValido, validarRun } from "../js/validaciones";
+import { regiones, getComunas } from "../data/regiones";
+import { getUsuarios, createUsuario, updateUsuario, deleteUsuario } from "../data/crudService";
+import { requerido, maxCaracteres, esCorreoValido, validarRun } from "../utils/validaciones";
+
+const TIPOS_USUARIO = ["Administrador", "Vendedor", "Cliente"];
 
 const FORM_VACIO = {
     run: "",
@@ -14,16 +15,16 @@ const FORM_VACIO = {
     tipoUsuario: "",
     region: "",
     comuna: "",
-    direccion: ""
+    direccion: "",
 };
 
 function validarCampo(campo, valor) {
     const v = String(valor).trim();
     switch (campo) {
         case "run":
-            if (!requerido(v)) return "El run es requerido.";
-            if (!minLength(v, 7) || !maxCaracteres(v, 9)) return "El run debe tener entre 7 y 9 caracteres.";
-            if (!validarRun(v)) return "El run no es valido, revise el digito verificador.";
+            if (!requerido(v)) return "El RUN es requerido.";
+            if (v.length < 7 || v.length > 9) return "El RUN debe tener entre 7 y 9 caracteres.";
+            if (!validarRun(v)) return "El RUN no es válido, revise el dígito verificador.";
             return "";
         case "nombre":
             if (!requerido(v)) return "El nombre es requerido.";
@@ -42,14 +43,14 @@ function validarCampo(campo, valor) {
             if (!requerido(v)) return "Debe seleccionar un tipo de usuario.";
             return "";
         case "region":
-            if (!requerido(v)) return "Debe seleccionar una region.";
+            if (!requerido(v)) return "Debe seleccionar una región.";
             return "";
         case "comuna":
             if (!requerido(v)) return "Debe seleccionar una comuna.";
             return "";
         case "direccion":
-            if (!requerido(v)) return "La direccion es requerida.";
-            if (!maxCaracteres(v, 300)) return "La direccion no puede superar los 300 caracteres.";
+            if (!requerido(v)) return "La dirección es requerida.";
+            if (!maxCaracteres(v, 300)) return "La dirección no puede superar los 300 caracteres.";
             return "";
         default:
             return "";
@@ -57,16 +58,20 @@ function validarCampo(campo, valor) {
 }
 
 export default function AdminUsuarios() {
-    const [usuarios, setUsuarios] = useState(() => crudService.listUsuarios());
+    const [usuarios, setUsuarios] = useState(() => getUsuarios());
     const [form, setForm] = useState(FORM_VACIO);
-    const [indiceEditar, setIndiceEditar] = useState(null);
+    const [runEditar, setRunEditar] = useState(null);
     const [errores, setErrores] = useState({});
     const [tocado, setTocado] = useState({});
     const [enviado, setEnviado] = useState(false);
 
-    const comunas = useMemo(() => getComunasPorNombre(form.region), [form.region]);
+    const comunas = useMemo(
+        () => (form.region ? getComunas(form.region) : []),
+        [form.region],
+    );
 
-    const mostrarError = (campo) => ((tocado[campo] || enviado) && errores[campo] ? errores[campo] : "");
+    const mostrarError = (campo) =>
+        (tocado[campo] || enviado) && errores[campo] ? errores[campo] : "";
 
     const handleChange = (campo) => (evento) => {
         const valor = evento.target.value;
@@ -75,7 +80,7 @@ export default function AdminUsuarios() {
             setErrores((anterior) => ({
                 ...anterior,
                 region: validarCampo("region", valor),
-                comuna: ""
+                comuna: "",
             }));
             return;
         }
@@ -83,42 +88,42 @@ export default function AdminUsuarios() {
         setErrores((anterior) => ({ ...anterior, [campo]: validarCampo(campo, valor) }));
     };
 
-    const handleBlur = (campo) => () => {
-        setTocado((anterior) => ({ ...anterior, [campo]: true }));
-    };
+    const handleBlur = (campo) => () => setTocado((anterior) => ({ ...anterior, [campo]: true }));
 
     const limpiarFormulario = () => {
         setForm(FORM_VACIO);
-        setIndiceEditar(null);
+        setRunEditar(null);
         setErrores({});
         setTocado({});
         setEnviado(false);
     };
 
-    const editarUsuario = (indice) => {
-        const usuario = usuarios[indice];
+    const editarUsuario = (run) => {
+        const usuario = getUsuarios().find((u) => u.run === run);
+        if (!usuario) return;
+        const regionEncontrada = regiones.find((r) => r.nombre === usuario.region);
         setForm({
             run: usuario.run,
             nombre: usuario.nombre,
             apellidos: usuario.apellidos,
             correo: usuario.correo,
-            fechaNacimiento: usuario.fechaNacimiento,
+            fechaNacimiento: usuario.fechaNacimiento || "",
             tipoUsuario: usuario.tipoUsuario,
-            region: usuario.region,
+            region: regionEncontrada ? String(regionEncontrada.id) : "",
             comuna: usuario.comuna,
-            direccion: usuario.direccion
+            direccion: usuario.direccion,
         });
-        setIndiceEditar(indice);
+        setRunEditar(usuario.run);
         setErrores({});
         setTocado({});
         setEnviado(false);
     };
 
-    const eliminarUsuario = (indice) => {
-        const usuario = usuarios[indice];
-        if (!window.confirm(`Desea eliminar al usuario ${usuario.nombre} ${usuario.apellidos}?`)) return;
-        crudService.deleteUsuario(indice);
-        setUsuarios(crudService.listUsuarios());
+    const eliminarUsuario = (run) => {
+        const usuario = getUsuarios().find((u) => u.run === run);
+        if (!window.confirm(`¿Desea eliminar al usuario ${usuario.nombre} ${usuario.apellidos}?`)) return;
+        deleteUsuario(run);
+        setUsuarios(getUsuarios());
     };
 
     const guardarUsuario = (evento) => {
@@ -134,6 +139,7 @@ export default function AdminUsuarios() {
 
         if (Object.values(nuevosErrores).some((m) => m !== "")) return;
 
+        const regionEncontrada = regiones.find((r) => r.id === Number(form.region));
         const usuario = {
             run: form.run.trim(),
             nombre: form.nombre.trim(),
@@ -141,17 +147,17 @@ export default function AdminUsuarios() {
             correo: form.correo.trim(),
             fechaNacimiento: form.fechaNacimiento,
             tipoUsuario: form.tipoUsuario,
-            region: form.region,
+            region: regionEncontrada ? regionEncontrada.nombre : "",
             comuna: form.comuna,
-            direccion: form.direccion.trim()
+            direccion: form.direccion.trim(),
         };
 
-        if (indiceEditar !== null) {
-            crudService.updateUsuario(indiceEditar, usuario);
+        if (runEditar !== null) {
+            updateUsuario(runEditar, usuario);
         } else {
-            crudService.createUsuario(usuario);
+            createUsuario(usuario);
         }
-        setUsuarios(crudService.listUsuarios());
+        setUsuarios(getUsuarios());
         limpiarFormulario();
     };
 
@@ -164,7 +170,7 @@ export default function AdminUsuarios() {
                 <table className="tabla-admin">
                     <thead>
                         <tr>
-                            <th>Run</th>
+                            <th>RUN</th>
                             <th>Nombre</th>
                             <th>Apellidos</th>
                             <th>Correo</th>
@@ -178,18 +184,26 @@ export default function AdminUsuarios() {
                                 <td colSpan="6">No hay usuarios registrados.</td>
                             </tr>
                         ) : (
-                            usuarios.map((usuario, indice) => (
-                                <tr key={usuario.run + indice}>
+                            usuarios.map((usuario) => (
+                                <tr key={usuario.run}>
                                     <td>{usuario.run}</td>
                                     <td>{usuario.nombre}</td>
                                     <td>{usuario.apellidos}</td>
                                     <td>{usuario.correo}</td>
                                     <td>{usuario.tipoUsuario}</td>
                                     <td>
-                                        <button type="button" className="btn-admin btn-editar" onClick={() => editarUsuario(indice)}>
+                                        <button
+                                            type="button"
+                                            className="btn-admin btn-editar"
+                                            onClick={() => editarUsuario(usuario.run)}
+                                        >
                                             Editar
                                         </button>
-                                        <button type="button" className="btn-admin btn-eliminar" onClick={() => eliminarUsuario(indice)}>
+                                        <button
+                                            type="button"
+                                            className="btn-admin btn-eliminar"
+                                            onClick={() => eliminarUsuario(usuario.run)}
+                                        >
                                             Eliminar
                                         </button>
                                         <Link
@@ -207,16 +221,16 @@ export default function AdminUsuarios() {
             </section>
 
             <section className="seccion-formulario">
-                <h2>{indiceEditar === null ? "Nuevo usuario" : "Editar usuario"}</h2>
+                <h2>{runEditar === null ? "Nuevo usuario" : "Editar usuario"}</h2>
 
                 <form onSubmit={guardarUsuario} noValidate>
                     <div className="form-admin">
                         <div className="campo-form">
-                            <label htmlFor="run-usuario">Run</label>
+                            <label htmlFor="run-usuario">RUN</label>
                             <input
                                 type="text"
                                 id="run-usuario"
-                                placeholder="sin puntos ni guion, ej: 190110222"
+                                placeholder="sin puntos ni guion, ej: 19011022K"
                                 value={form.run}
                                 onChange={handleChange("run")}
                                 onBlur={handleBlur("run")}
@@ -299,7 +313,7 @@ export default function AdminUsuarios() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="region-usuario">Region</label>
+                            <label htmlFor="region-usuario">Región</label>
                             <select
                                 id="region-usuario"
                                 value={form.region}
@@ -307,9 +321,9 @@ export default function AdminUsuarios() {
                                 onBlur={handleBlur("region")}
                                 className={mostrarError("region") ? "input-error" : ""}
                             >
-                                <option value="">Seleccione una region</option>
-                                {REGIONES.map((region) => (
-                                    <option key={region.id} value={region.nombre}>
+                                <option value="">Seleccione una región</option>
+                                {regiones.map((region) => (
+                                    <option key={region.id} value={region.id}>
                                         {region.nombre}
                                     </option>
                                 ))}
@@ -328,7 +342,7 @@ export default function AdminUsuarios() {
                                 className={mostrarError("comuna") ? "input-error" : ""}
                             >
                                 <option value="">
-                                    {form.region === "" ? "Seleccione una region primero" : "Seleccione una comuna"}
+                                    {form.region === "" ? "Seleccione una región primero" : "Seleccione una comuna"}
                                 </option>
                                 {comunas.map((comuna) => (
                                     <option key={comuna} value={comuna}>
@@ -340,7 +354,7 @@ export default function AdminUsuarios() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="direccion-usuario">Direccion</label>
+                            <label htmlFor="direccion-usuario">Dirección</label>
                             <input
                                 type="text"
                                 id="direccion-usuario"
@@ -357,7 +371,11 @@ export default function AdminUsuarios() {
                             <button type="submit" className="btn-admin btn-guardar">
                                 Guardar usuario
                             </button>
-                            <button type="button" className="btn-admin btn-limpiar" onClick={limpiarFormulario}>
+                            <button
+                                type="button"
+                                className="btn-admin btn-limpiar"
+                                onClick={limpiarFormulario}
+                            >
                                 Cancelar
                             </button>
                         </div>

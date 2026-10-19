@@ -1,21 +1,18 @@
 import { useState } from "react";
-import { crudService } from "../services/crudService";
-import { requerido, maxCaracteres } from "../js/validaciones";
+import { useAuth } from "../context/authContext";
+import { requerido, maxCaracteres } from "../utils/validaciones";
 
 export default function AdminPerfil() {
-    const [sesion, setSesion] = useState(() => crudService.getSesion());
-    const [form, setForm] = useState(() => {
-        const actual = crudService.getSesion();
-        return {
-            nombre: actual ? actual.nombre : "",
-            direccion: actual ? actual.direccion : "",
-            password: actual && actual.password ? actual.password : "",
-            confirmar: actual && actual.password ? actual.password : ""
-        };
-    });
+    const { usuarioActivo, actualizarPerfil } = useAuth();
+    const [form, setForm] = useState(usuarioActivo ? {
+        nombre: usuarioActivo.nombre,
+        direccion: usuarioActivo.direccion || "",
+        password: "",
+        confirmar: "",
+    } : { nombre: "", direccion: "", password: "", confirmar: "" });
     const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
 
-    if (sesion === null) {
+    if (!usuarioActivo) {
         return (
             <main className="admin-contenido">
                 <h1>Perfil</h1>
@@ -41,50 +38,48 @@ export default function AdminPerfil() {
             return;
         }
         if (!requerido(form.direccion)) {
-            setMensaje({ tipo: "error", texto: "La direccion es requerida." });
+            setMensaje({ tipo: "error", texto: "La dirección es requerida." });
             return;
         }
-        if (!maxCaracteres(form.direccion, 300)) {
-            setMensaje({ tipo: "error", texto: "La direccion no puede superar los 300 caracteres." });
-            return;
-        }
-        if (form.password.length < 6) {
-            setMensaje({ tipo: "error", texto: "La contraseña debe tener al menos 6 caracteres." });
-            return;
-        }
-        if (form.password !== form.confirmar) {
-            setMensaje({ tipo: "error", texto: "Las contraseñas no coinciden." });
-            return;
+        if (form.password !== "") {
+            if (form.password.length < 4 || form.password.length > 10) {
+                setMensaje({ tipo: "error", texto: "La contraseña debe tener entre 4 y 10 caracteres." });
+                return;
+            }
+            if (form.password !== form.confirmar) {
+                setMensaje({ tipo: "error", texto: "Las contraseñas no coinciden." });
+                return;
+            }
         }
 
-        const actualizada = crudService.actualizarPerfil({
+        actualizarPerfil({
             nombre: form.nombre.trim(),
             direccion: form.direccion.trim(),
-            password: form.password
+            password: form.password,
         });
-        setSesion(actualizada);
         setMensaje({ tipo: "ok", texto: "Perfil actualizado correctamente." });
+        setForm((anterior) => ({ ...anterior, password: "", confirmar: "" }));
     };
 
     return (
         <main className="admin-contenido">
             <h1>Perfil</h1>
             <p className="admin-saludo">
-                Administrador: {sesion.nombre} — {sesion.correo}
+                Administrador: {usuarioActivo.nombre} — {usuarioActivo.correo}
             </p>
 
             <section className="seccion-formulario">
                 <form onSubmit={guardar} noValidate>
                     <div className="form-admin">
                         <div className="campo-form">
-                            <label htmlFor="run-perfil">Run</label>
-                            <input type="text" id="run-perfil" value={sesion.run} disabled />
+                            <label htmlFor="run-perfil">RUN</label>
+                            <input type="text" id="run-perfil" value={usuarioActivo.run} disabled />
                             <p className="mensaje-error"></p>
                         </div>
 
                         <div className="campo-form">
                             <label htmlFor="correo-perfil">Correo</label>
-                            <input type="email" id="correo-perfil" value={sesion.correo} disabled />
+                            <input type="email" id="correo-perfil" value={usuarioActivo.correo} disabled />
                             <p className="mensaje-error"></p>
                         </div>
 
@@ -101,7 +96,7 @@ export default function AdminPerfil() {
                         </div>
 
                         <div className="campo-form">
-                            <label htmlFor="direccion-perfil">Direccion</label>
+                            <label htmlFor="direccion-perfil">Dirección</label>
                             <input
                                 type="text"
                                 id="direccion-perfil"
