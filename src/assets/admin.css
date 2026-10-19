@@ -371,7 +371,7 @@ a.btn-admin {
     cursor: pointer;
 }
 
-.badge {
+.admin-contenido .badge {
     display: inline-block;
     padding: 4px 10px;
     border-radius: 12px;

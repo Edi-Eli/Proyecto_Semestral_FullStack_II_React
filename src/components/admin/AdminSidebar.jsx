@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { crudService } from "../../services/crudService";
+import { useAuth } from "../../context/authContext.js";
 
 const ENLACES = [
     { to: "/admin", etiqueta: "Dashboard", exacto: true },
@@ -16,10 +16,13 @@ export default function AdminSidebar() {
     const [abierto, setAbierto] = useState(false);
     const navigate = useNavigate();
 
+    const { logout } = useAuth();
+
     const cerrarSesion = () => {
-        crudService.cerrarSesion();
+        logout();
         navigate("/");
     };
+
 
     return (
         <aside className={`admin-sidebar ${abierto ? "admin-sidebar-abierto" : ""}`}>
