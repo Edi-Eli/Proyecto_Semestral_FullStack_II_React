@@ -3,6 +3,12 @@ import AppProviders from './context/AppProviders.jsx'
 import PublicLayout from './components/common/PublicLayout.jsx'
 import AdminLayout from './components/admin/AdminLayout.jsx'
 import Home from './pages/shop/Home.jsx'
+import Login from './pages/shop/Login.jsx'
+import Registro from './pages/shop/Registro.jsx'
+import Contacto from './pages/shop/Contacto.jsx'
+import Nosotros from './pages/shop/Nosotros.jsx'
+import Blogs from './pages/shop/Blogs.jsx'
+import BlogDetalle from './pages/shop/BlogDetalle.jsx'
 import PlaceholderPage from './pages/PlaceholderPage.jsx'
 
 function App() {
@@ -21,12 +27,12 @@ function App() {
             <Route path="/checkout" element={<PlaceholderPage titulo="Checkout" />} />
             <Route path="/pago-exitoso" element={<PlaceholderPage titulo="Pago Exitoso" />} />
             <Route path="/pago-error" element={<PlaceholderPage titulo="Error de Pago" />} />
-            <Route path="/login" element={<PlaceholderPage titulo="Iniciar Sesión" />} />
-            <Route path="/registro" element={<PlaceholderPage titulo="Registro" />} />
-            <Route path="/nosotros" element={<PlaceholderPage titulo="Nosotros" />} />
-            <Route path="/blogs" element={<PlaceholderPage titulo="Blogs" />} />
-            <Route path="/blogs/:id" element={<PlaceholderPage titulo="Detalle Blog" />} />
-            <Route path="/contacto" element={<PlaceholderPage titulo="Contacto" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/registro" element={<Registro />} />
+            <Route path="/nosotros" element={<Nosotros />} />
+            <Route path="/blogs" element={<Blogs />} />
+            <Route path="/blogs/:id" element={<BlogDetalle />} />
+            <Route path="/contacto" element={<Contacto />} />
           </Route>
 
           <Route path="/admin" element={<AdminLayout />}>
