@@ -17,15 +17,7 @@ import Contacto from './pages/shop/Contacto.jsx'
 import Nosotros from './pages/shop/Nosotros.jsx'
 import Blogs from './pages/shop/Blogs.jsx'
 import BlogDetalle from './pages/shop/BlogDetalle.jsx'
-import AdminDashboard from './admin/AdminDashboard.jsx'
-import AdminOrdenes from './admin/AdminOrdenes.jsx'
-import AdminProductos from './admin/AdminProductos.jsx'
-import AdminCriticos from './admin/AdminCriticos.jsx'
-import AdminCategorias from './admin/AdminCategorias.jsx'
-import AdminUsuarios from './admin/AdminUsuarios.jsx'
-import AdminHistorial from './admin/AdminHistorial.jsx'
-import AdminReportes from './admin/AdminReportes.jsx'
-import AdminPerfil from './admin/AdminPerfil.jsx'
+import PlaceholderPage from './pages/PlaceholderPage.jsx'
 
 function App() {
   return (
@@ -52,15 +44,15 @@ function App() {
           </Route>
 
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="ordenes" element={<AdminOrdenes />} />
-            <Route path="productos" element={<AdminProductos />} />
-            <Route path="productos/criticos" element={<AdminCriticos />} />
-            <Route path="categorias" element={<AdminCategorias />} />
-            <Route path="usuarios" element={<AdminUsuarios />} />
-            <Route path="usuarios/:id/historial" element={<AdminHistorial />} />
-            <Route path="reportes" element={<AdminReportes />} />
-            <Route path="perfil" element={<AdminPerfil />} />
+            <Route index element={<PlaceholderPage titulo="Dashboard Admin" />} />
+            <Route path="ordenes" element={<PlaceholderPage titulo="Órdenes" />} />
+            <Route path="productos" element={<PlaceholderPage titulo="Productos Admin" />} />
+            <Route path="productos/criticos" element={<PlaceholderPage titulo="Productos Críticos" />} />
+            <Route path="categorias" element={<PlaceholderPage titulo="Categorías Admin" />} />
+            <Route path="usuarios" element={<PlaceholderPage titulo="Usuarios Admin" />} />
+            <Route path="usuarios/:id/historial" element={<PlaceholderPage titulo="Historial de Compras" />} />
+            <Route path="reportes" element={<PlaceholderPage titulo="Reportes" />} />
+            <Route path="perfil" element={<PlaceholderPage titulo="Perfil" />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
