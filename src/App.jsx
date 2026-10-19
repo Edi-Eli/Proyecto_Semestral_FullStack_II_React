@@ -35,21 +35,6 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/pago-exitoso" element={<PagoExitoso />} />
             <Route path="/pago-error" element={<PagoError />} />
-            <Route path="/login" element={<PlaceholderPage titulo="Iniciar Sesión" />} />
-            <Route path="/registro" element={<PlaceholderPage titulo="Registro" />} />
-            <Route path="/nosotros" element={<PlaceholderPage titulo="Nosotros" />} />
-            <Route path="/blogs" element={<PlaceholderPage titulo="Blogs" />} />
-            <Route path="/blogs/:id" element={<PlaceholderPage titulo="Detalle Blog" />} />
-            <Route path="/contacto" element={<PlaceholderPage titulo="Contacto" />} />
-            <Route path="/productos" element={<PlaceholderPage titulo="Productos" />} />
-            <Route path="/producto/:id" element={<PlaceholderPage titulo="Detalle Producto" />} />
-            <Route path="/categorias" element={<PlaceholderPage titulo="Categorías" />} />
-            <Route path="/categorias/:id" element={<PlaceholderPage titulo="Categoría" />} />
-            <Route path="/ofertas" element={<PlaceholderPage titulo="Ofertas" />} />
-            <Route path="/carrito" element={<PlaceholderPage titulo="Carrito de Compras" />} />
-            <Route path="/checkout" element={<PlaceholderPage titulo="Checkout" />} />
-            <Route path="/pago-exitoso" element={<PlaceholderPage titulo="Pago Exitoso" />} />
-            <Route path="/pago-error" element={<PlaceholderPage titulo="Error de Pago" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
             <Route path="/nosotros" element={<Nosotros />} />
