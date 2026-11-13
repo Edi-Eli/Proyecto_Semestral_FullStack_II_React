@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppProviders from './context/AppProviders.jsx'
 import PublicLayout from './components/common/PublicLayout.jsx'
 import AdminLayout from './components/admin/AdminLayout.jsx'
+import RoleRoute from './components/common/RoleRoute.jsx'
 import Home from './pages/shop/Home.jsx'
 import Productos from './pages/shop/Productos.jsx'
 import ProductoDetalle from './pages/shop/ProductoDetalle.jsx'
@@ -26,6 +27,7 @@ import AdminUsuarios from './admin/AdminUsuarios.jsx'
 import AdminHistorial from './admin/AdminHistorial.jsx'
 import AdminReportes from './admin/AdminReportes.jsx'
 import AdminPerfil from './admin/AdminPerfil.jsx'
+import AdminContactos from './admin/AdminContactos.jsx'
 
 function App() {
   return (
@@ -51,7 +53,14 @@ function App() {
             <Route path="/contacto" element={<Contacto />} />
           </Route>
 
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route
+            path="/admin"
+            element={
+              <RoleRoute roles={['Administrador']}>
+                <AdminLayout />
+              </RoleRoute>
+            }
+          >
             <Route index element={<AdminDashboard />} />
             <Route path="ordenes" element={<AdminOrdenes />} />
             <Route path="productos" element={<AdminProductos />} />
@@ -60,6 +69,7 @@ function App() {
             <Route path="usuarios" element={<AdminUsuarios />} />
             <Route path="usuarios/:id/historial" element={<AdminHistorial />} />
             <Route path="reportes" element={<AdminReportes />} />
+            <Route path="contacto" element={<AdminContactos />} />
             <Route path="perfil" element={<AdminPerfil />} />
           </Route>
 

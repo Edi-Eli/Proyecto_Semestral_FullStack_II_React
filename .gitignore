@@ -23,3 +23,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variables de entorno locales (no versionar secretos/URLs locales)
+# .env.example SÍ se versiona como plantilla.
+.env

@@ -45,7 +45,7 @@ function Registro() {
   const erroresComuna = requisitosRequerido(form.comuna, 'Debes seleccionar una comuna.')
   const erroresDireccion = requisitosRequerido(form.direccion, 'La dirección es requerida.', 300)
 
-  function manejarSubmit(evento) {
+  async function manejarSubmit(evento) {
     evento.preventDefault()
     setErrorGeneral('')
 
@@ -69,15 +69,21 @@ function Registro() {
       region: region ? region.nombre : '',
       tipoUsuario: 'Cliente',
     }
-    const resultado = registrar(datos)
-    setEnviando(false)
+
+    let resultado
+    try {
+      resultado = await registrar(datos)
+    } finally {
+      setEnviando(false)
+    }
 
     if (!resultado.ok) {
       setErrorGeneral(resultado.mensaje || 'No se pudo registrar el usuario.')
       return
     }
 
-    navigate('/')
+    // Si el backend devolvió token, la sesión ya quedó iniciada; si no, ir a login.
+    navigate(resultado.autenticado ? '/' : '/login')
   }
 
   function claseCampo(errores, valor) {

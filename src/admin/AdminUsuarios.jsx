@@ -1,7 +1,13 @@
-import { useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { regiones, getComunas } from "../data/regiones";
-import { getUsuarios, createUsuario, updateUsuario, deleteUsuario } from "../data/crudService";
+import {
+    listarUsuarios,
+    crearUsuario,
+    actualizarUsuario,
+    eliminarUsuario,
+    cambiarEstado,
+} from "../api/usuarios";
 import { requerido, maxCaracteres, esCorreoValido, validarRun } from "../utils/validaciones";
 
 const TIPOS_USUARIO = ["Administrador", "Vendedor", "Cliente"];
@@ -57,13 +63,47 @@ function validarCampo(campo, valor) {
     }
 }
 
+/** Un usuario está activo salvo que el backend indique explícitamente `activo === false`. */
+const estaActivo = (usuario) => usuario.activo !== false;
+
 export default function AdminUsuarios() {
-    const [usuarios, setUsuarios] = useState(() => getUsuarios());
+    const [usuarios, setUsuarios] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState("");
+    const [guardando, setGuardando] = useState(false);
+    const [procesandoRun, setProcesandoRun] = useState(null);
     const [form, setForm] = useState(FORM_VACIO);
     const [runEditar, setRunEditar] = useState(null);
     const [errores, setErrores] = useState({});
     const [tocado, setTocado] = useState({});
     const [enviado, setEnviado] = useState(false);
+
+    /** Trae los usuarios desde la API (área A). */
+    const cargarUsuarios = useCallback(async () => {
+        try {
+            const lista = await listarUsuarios();
+            setUsuarios(Array.isArray(lista) ? lista : []);
+            setError("");
+        } catch (e) {
+            setError(e.message || "No se pudieron cargar los usuarios.");
+        } finally {
+            setCargando(false);
+        }
+    }, []);
+
+    /** Recarga mostrando el estado de carga (usado tras crear/editar/eliminar). */
+    const recargar = useCallback(() => {
+        setCargando(true);
+        return cargarUsuarios();
+    }, [cargarUsuarios]);
+
+    useEffect(() => {
+        // Carga inicial de datos externos (API) al montar el componente. El
+        // setState ocurre DESPUÉS del `await` (no en el render); la regla no
+        // distingue ese caso asíncrono, por eso se silencia de forma puntual.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        cargarUsuarios();
+    }, [cargarUsuarios]);
 
     const comunas = useMemo(
         () => (form.region ? getComunas(form.region) : []),
@@ -99,7 +139,7 @@ export default function AdminUsuarios() {
     };
 
     const editarUsuario = (run) => {
-        const usuario = getUsuarios().find((u) => u.run === run);
+        const usuario = usuarios.find((u) => String(u.run) === String(run));
         if (!usuario) return;
         const regionEncontrada = regiones.find((r) => r.nombre === usuario.region);
         setForm({
@@ -119,14 +159,37 @@ export default function AdminUsuarios() {
         setEnviado(false);
     };
 
-    const eliminarUsuario = (run) => {
-        const usuario = getUsuarios().find((u) => u.run === run);
-        if (!window.confirm(`¿Desea eliminar al usuario ${usuario.nombre} ${usuario.apellidos}?`)) return;
-        deleteUsuario(run);
-        setUsuarios(getUsuarios());
+    const manejarEliminar = async (run) => {
+        const usuario = usuarios.find((u) => String(u.run) === String(run));
+        const nombre = usuario ? `${usuario.nombre} ${usuario.apellidos}` : run;
+        if (!window.confirm(`¿Desea eliminar al usuario ${nombre}?`)) return;
+        setProcesandoRun(run);
+        setError("");
+        try {
+            await eliminarUsuario(run);
+            await recargar();
+        } catch (e) {
+            setError(e.message || "No se pudo eliminar el usuario.");
+        } finally {
+            setProcesandoRun(null);
+        }
     };
 
-    const guardarUsuario = (evento) => {
+    /** Activa/desactiva un usuario (PATCH /api/usuarios/{run}/estado). */
+    const manejarCambiarEstado = async (usuario) => {
+        setProcesandoRun(usuario.run);
+        setError("");
+        try {
+            await cambiarEstado(usuario.run, !estaActivo(usuario));
+            await recargar();
+        } catch (e) {
+            setError(e.message || "No se pudo cambiar el estado del usuario.");
+        } finally {
+            setProcesandoRun(null);
+        }
+    };
+
+    const guardarUsuario = async (evento) => {
         evento.preventDefault();
         setEnviado(true);
 
@@ -152,72 +215,115 @@ export default function AdminUsuarios() {
             direccion: form.direccion.trim(),
         };
 
-        if (runEditar !== null) {
-            updateUsuario(runEditar, usuario);
-        } else {
-            createUsuario(usuario);
+        setGuardando(true);
+        setError("");
+        try {
+            if (runEditar !== null) {
+                await actualizarUsuario(runEditar, usuario);
+            } else {
+                await crearUsuario(usuario);
+            }
+            await recargar();
+            limpiarFormulario();
+        } catch (e) {
+            setError(e.message || "No se pudo guardar el usuario.");
+        } finally {
+            setGuardando(false);
         }
-        setUsuarios(getUsuarios());
-        limpiarFormulario();
     };
 
     return (
         <main className="admin-contenido">
             <h1>Mantenedor de Usuarios</h1>
 
+            {error && (
+                <div className="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+                    <span>{error}</span>
+                    <button type="button" className="btn-admin btn-limpiar" onClick={recargar}>
+                        Reintentar
+                    </button>
+                </div>
+            )}
+
             <section className="seccion-tabla">
                 <h2>Listado de usuarios</h2>
-                <table className="tabla-admin">
-                    <thead>
-                        <tr>
-                            <th>RUN</th>
-                            <th>Nombre</th>
-                            <th>Apellidos</th>
-                            <th>Correo</th>
-                            <th>Tipo de usuario</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {usuarios.length === 0 ? (
+                <div className="table-responsive">
+                    <table className="tabla-admin">
+                        <thead>
                             <tr>
-                                <td colSpan="6">No hay usuarios registrados.</td>
+                                <th>RUN</th>
+                                <th>Nombre</th>
+                                <th>Apellidos</th>
+                                <th>Correo</th>
+                                <th>Tipo de usuario</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
-                        ) : (
-                            usuarios.map((usuario) => (
-                                <tr key={usuario.run}>
-                                    <td>{usuario.run}</td>
-                                    <td>{usuario.nombre}</td>
-                                    <td>{usuario.apellidos}</td>
-                                    <td>{usuario.correo}</td>
-                                    <td>{usuario.tipoUsuario}</td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            className="btn-admin btn-editar"
-                                            onClick={() => editarUsuario(usuario.run)}
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn-admin btn-eliminar"
-                                            onClick={() => eliminarUsuario(usuario.run)}
-                                        >
-                                            Eliminar
-                                        </button>
-                                        <Link
-                                            className="btn-admin btn-editar"
-                                            to={`/admin/usuarios/${usuario.run}/historial`}
-                                        >
-                                            Historial de Compras
-                                        </Link>
-                                    </td>
+                        </thead>
+                        <tbody>
+                            {cargando ? (
+                                <tr>
+                                    <td colSpan="7">Cargando usuarios…</td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : usuarios.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7">No hay usuarios registrados.</td>
+                                </tr>
+                            ) : (
+                                usuarios.map((usuario) => {
+                                    const activo = estaActivo(usuario);
+                                    const ocupado = String(procesandoRun) === String(usuario.run);
+                                    return (
+                                        <tr key={usuario.run}>
+                                            <td>{usuario.run}</td>
+                                            <td>{usuario.nombre}</td>
+                                            <td>{usuario.apellidos}</td>
+                                            <td>{usuario.correo}</td>
+                                            <td>{usuario.tipoUsuario}</td>
+                                            <td>
+                                                <span className={activo ? "estado-activo" : "estado-inactivo"}>
+                                                    {activo ? "Activo" : "Inactivo"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    className="btn-admin btn-editar"
+                                                    onClick={() => editarUsuario(usuario.run)}
+                                                    disabled={ocupado}
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-admin btn-editar"
+                                                    onClick={() => manejarCambiarEstado(usuario)}
+                                                    disabled={ocupado}
+                                                >
+                                                    {activo ? "Desactivar" : "Activar"}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-admin btn-eliminar"
+                                                    onClick={() => manejarEliminar(usuario.run)}
+                                                    disabled={ocupado}
+                                                >
+                                                    Eliminar
+                                                </button>
+                                                <Link
+                                                    className="btn-admin btn-editar"
+                                                    to={`/admin/usuarios/${usuario.run}/historial`}
+                                                >
+                                                    Historial de Compras
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
             <section className="seccion-formulario">
@@ -368,13 +474,14 @@ export default function AdminUsuarios() {
                         </div>
 
                         <div className="botones-form">
-                            <button type="submit" className="btn-admin btn-guardar">
-                                Guardar usuario
+                            <button type="submit" className="btn-admin btn-guardar" disabled={guardando}>
+                                {guardando ? "Guardando…" : "Guardar usuario"}
                             </button>
                             <button
                                 type="button"
                                 className="btn-admin btn-limpiar"
                                 onClick={limpiarFormulario}
+                                disabled={guardando}
                             >
                                 Cancelar
                             </button>

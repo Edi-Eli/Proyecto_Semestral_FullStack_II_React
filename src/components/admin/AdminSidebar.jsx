@@ -33,6 +33,9 @@ function AdminSidebar() {
         <NavLink to="/admin/reportes" className={linkClase}>
           <i className="bi bi-graph-up"></i> Reportes
         </NavLink>
+        <NavLink to="/admin/contacto" className={linkClase}>
+          <i className="bi bi-envelope"></i> Contactos
+        </NavLink>
         <NavLink to="/admin/perfil" className={linkClase}>
           <i className="bi bi-person-circle"></i> Perfil
         </NavLink>

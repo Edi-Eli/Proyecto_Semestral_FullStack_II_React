@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext.js'
 import { requisitosCorreo, requisitosContrasena } from '../../utils/camposFormulario.js'
 
 function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
@@ -15,7 +16,7 @@ function Login() {
   const erroresCorreo = requisitosCorreo(correo)
   const erroresContrasena = requisitosContrasena(contrasena)
 
-  function manejarSubmit(evento) {
+  async function manejarSubmit(evento) {
     evento.preventDefault()
     setErrorGeneral('')
 
@@ -24,15 +25,23 @@ function Login() {
     }
 
     setEnviando(true)
-    const resultado = login(correo, contrasena)
-    setEnviando(false)
+    let resultado
+    try {
+      resultado = await login(correo, contrasena)
+    } finally {
+      setEnviando(false)
+    }
 
     if (!resultado.ok) {
-      setErrorGeneral(resultado.mensaje)
+      setErrorGeneral(resultado.mensaje || 'Correo o contraseña incorrectos.')
       return
     }
 
-    if (resultado.usuario.tipoUsuario === 'Administrador') {
+    // Si se llegó aquí redirigido desde una ruta protegida, volver a ella.
+    const destino = location.state?.desde
+    if (destino) {
+      navigate(destino, { replace: true })
+    } else if (resultado.usuario?.tipoUsuario === 'Administrador') {
       navigate('/admin')
     } else {
       navigate('/')
