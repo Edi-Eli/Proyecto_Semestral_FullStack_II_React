@@ -1,20 +1,37 @@
 import { useState } from 'react'
+import { enviarMensaje } from '../../api/contacto.js'
 import { requisitosCorreo, requisitosRequerido } from '../../utils/camposFormulario.js'
 
 function Contacto() {
   const [nombre, setNombre] = useState('')
   const [correo, setCorreo] = useState('')
   const [comentario, setComentario] = useState('')
+  const [enviando, setEnviando] = useState(false)
   const [enviado, setEnviado] = useState(false)
+  const [errorEnvio, setErrorEnvio] = useState('')
 
   const erroresNombre = requisitosRequerido(nombre, 'El nombre es requerido.', 100)
   const erroresCorreo = requisitosCorreo(correo)
   const erroresComentario = requisitosRequerido(comentario, 'El comentario es requerido.', 500)
 
-  function manejarSubmit(evento) {
+  async function manejarSubmit(evento) {
     evento.preventDefault()
+    setErrorEnvio('')
     if (erroresNombre.length || erroresCorreo.length || erroresComentario.length) return
-    setEnviado(true)
+
+    setEnviando(true)
+    try {
+      // El mensaje queda registrado en el backend (área G / EP3: CR de contactos).
+      await enviarMensaje({ nombre, correo, mensaje: comentario })
+      setEnviado(true)
+      setNombre('')
+      setCorreo('')
+      setComentario('')
+    } catch (e) {
+      setErrorEnvio(e.message || 'No se pudo enviar el mensaje. Intente nuevamente.')
+    } finally {
+      setEnviando(false)
+    }
   }
 
   function claseCampo(errores, valor) {
@@ -39,7 +56,7 @@ function Contacto() {
           <div className="alert alert-success" role="alert">
             ¡Mensaje enviado! Te responderemos pronto.
           </div>
-          <button type="button" className="btn-form" onClick={() => { setEnviado(false); setNombre(''); setCorreo(''); setComentario('') }}>
+          <button type="button" className="btn-form" onClick={() => { setEnviado(false); setErrorEnvio('') }}>
             Enviar otro mensaje
           </button>
         </div>
@@ -82,8 +99,16 @@ function Contacto() {
             {erroresComentario.map((mensaje) => <small key={mensaje} className="error-msg">{mensaje}</small>)}
           </div>
 
+          {errorEnvio && (
+            <div className="alert alert-danger py-2" role="alert">
+              {errorEnvio}
+            </div>
+          )}
+
           <div className="form-group">
-            <button type="submit" className="btn-form">Enviar mensaje</button>
+            <button type="submit" className="btn-form" disabled={enviando}>
+              {enviando ? 'Enviando…' : 'Enviar mensaje'}
+            </button>
           </div>
         </form>
       )}
