@@ -1,7 +1,3 @@
-/**
- * Paginador reutilizable — Ferretería Los Maestros
- * Responsable: Sebas
- */
 export default function Paginador({ page, totalPages, onCambiar }) {
   if (totalPages <= 1) return null
 

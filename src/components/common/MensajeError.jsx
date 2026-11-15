@@ -1,7 +1,3 @@
-/**
- * Mensaje de error reutilizable — Ferretería Los Maestros
- * Responsable: Sebas
- */
 export default function MensajeError({
   mensaje = 'Ocurrió un error al cargar la información.',
   onReintentar,

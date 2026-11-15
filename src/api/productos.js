@@ -1,23 +1,3 @@
-/**
- * API del Catálogo (productos, categorías, subcategorías) — Ferretería Los Maestros
- * ------------------------------------------------------------------
- * Responsable: Sebas
- *
- * Mientras el backend del módulo `producto` no esté listo, responde el
- * catálogo simulado (VITE_USAR_MOCK). Al conectar el backend real, poner
- * VITE_USAR_MOCK=false y alinear los nombres del DTO con este modelo.
- *
- * Contrato asumido:
- *   GET    /api/productos                 ?page&size&q&categoriaId&subcategoriaId&enOferta&orden
- *   GET    /api/productos/{id}
- *   GET    /api/productos/ofertas         ?page&size
- *   GET    /api/categorias
- *   GET    /api/subcategorias             ?categoriaId
- *   POST   /api/productos
- *   PUT    /api/productos/{id}
- *   PATCH  /api/productos/{id}/stock      { cantidad, accion: AGREGAR|RETIRAR }
- *   DELETE /api/productos/{id}
- */
 import api, { extraerLista } from './client.js'
 import * as mock from './mock.js'
 

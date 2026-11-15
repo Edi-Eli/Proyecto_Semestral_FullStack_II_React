@@ -1,7 +1,3 @@
-/**
- * Loader reutilizable — Ferretería Los Maestros
- * Responsable: Sebas
- */
 export default function Loader({ mensaje = 'Cargando...' }) {
   return (
     <div className="text-center my-4" role="status">

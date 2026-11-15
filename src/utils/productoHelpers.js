@@ -1,7 +1,3 @@
-/**
- * Helpers de producto — Ferretería Los Maestros
- * Responsable: Sebas
- */
 export const IMAGEN_FALLBACK = '/assets/images/image.png'
 
 export function formatearPrecioCLP(precio) {
