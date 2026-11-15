@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext.js'
 import { useCart } from '../../context/cartContext.js'
-import { formatearPrecioCLP, getCategorias } from '../../data/crudService.js'
+import * as productosApi from '../../api/productos.js'
+import { formatearPrecioCLP } from '../../utils/productoHelpers.js'
 
 function Navbar() {
   const { usuarioActivo, logout } = useAuth()
@@ -10,9 +11,24 @@ function Navbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [termino, setTermino] = useState('')
-  const [categorias] = useState(() => getCategorias())
+  const [categorias, setCategorias] = useState([])
   const [categoriasAbiertas, setCategoriasAbiertas] = useState(false)
   const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    let vigente = true
+    productosApi
+      .listarCategorias()
+      .then((lista) => {
+        if (vigente) setCategorias(lista || [])
+      })
+      .catch(() => {
+        if (vigente) setCategorias([])
+      })
+    return () => {
+      vigente = false
+    }
+  }, [])
 
   useEffect(() => {
     function cerrarAlClicFuera(evento) {
