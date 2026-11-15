@@ -1,13 +1,3 @@
-/**
- * Catálogo simulado — Ferretería Los Maestros
- * ------------------------------------------------------------------
- * Responsable: Sebas
- *
- * Implementa en memoria las mismas respuestas que entregará la API real
- * (paginación tipo Spring Page, filtros y ofertas). Se usa mientras el
- * backend no esté disponible; se elimina cuando el flag VITE_USAR_MOCK
- * pase a false y el backend del módulo producto quede listo.
- */
 import { productosIniciales, categoriasIniciales } from '../data/db.js'
 
 const IMAGEN_FALLBACK = '/assets/images/image.png'
