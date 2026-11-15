@@ -1,5 +1,8 @@
+/**
+ * PagoError — Error al procesar el pedido
+ */
 import { Link, useLocation } from 'react-router-dom'
-import { formatearPrecioCLP } from '../../data/crudService.js'
+import { formatearPrecioCLP } from '../../utils/productoHelpers.js'
 
 export default function PagoError() {
   const { state } = useLocation()
@@ -9,18 +12,19 @@ export default function PagoError() {
     <section className="seccion-pro">
       <h1 className="ti-pro text-danger">No se pudo realizar el pago</h1>
       <p className="text-center">
-        Hubo un problema al procesar tu compra. Puedes intentarlo nuevamente.
+        Hubo un problema al procesar tu compra. Revisa el stock o tu cuenta corriente e inténtalo nuevamente.
       </p>
 
       {orden && (
         <>
-          <h3>Resumen de dirección</h3>
-          <p>
-            {orden.direccion.calle}
-            {orden.direccion.depto ? `, Depto ${orden.direccion.depto}` : ''}, {orden.direccion.comuna},{' '}
-            {orden.direccion.region}
-          </p>
-
+          <h3>Resumen del pedido</h3>
+          {orden.direccion && (
+            <p>
+              {orden.direccion.calle}
+              {orden.direccion.depto ? `, Depto ${orden.direccion.depto}` : ''}, {orden.direccion.comuna},{' '}
+              {orden.direccion.region}
+            </p>
+          )}
           <div className="table-responsive">
             <table className="table">
               <thead>

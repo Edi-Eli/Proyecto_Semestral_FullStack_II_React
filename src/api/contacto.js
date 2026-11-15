@@ -1,7 +1,6 @@
 /**
  * API de Contacto — Ferretería Los Maestros
  * ------------------------------------------------------------------
- * Responsable: Edi
  *
  * Contrato asumido (debe coincidir con el documento 02 del backend):
  *   POST  /api/contactos               { nombre, correo, mensaje } -> mensaje creado

@@ -4,7 +4,6 @@ import { listarMensajes, marcarLeido, marcarResuelto } from "../api/contacto";
 /**
  * AdminContactos — CR de mensajes de contacto (EP3).
  * ------------------------------------------------------------------
- * Responsable: Edi (área G del documento 01_Mejoras_Frontend.md).
  *
  * Lista los mensajes recibidos y permite marcarlos como LEIDO o RESUELTO.
  * Los datos vienen de `GET /api/contactos`; el cambio de estado usa

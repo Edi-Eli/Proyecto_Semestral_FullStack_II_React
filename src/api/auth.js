@@ -1,7 +1,6 @@
 /**
  * API de Autenticación — Ferretería Los Maestros
  * ------------------------------------------------------------------
- * Responsable: Edi 
  *
  * Envuelve las rutas de autenticación del backend Spring Boot (monolito).
  * Toda la salida HTTP pasa por `./client.js` (token, errores, timeout).

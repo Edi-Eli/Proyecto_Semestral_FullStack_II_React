@@ -106,6 +106,9 @@ function Navbar() {
             <li><NavLink to="/nosotros" className={claseActivo}>Nosotros</NavLink></li>
             <li><NavLink to="/blogs" className={claseActivo}>Blog</NavLink></li>
             <li><NavLink to="/contacto" className={claseActivo}>Contacto</NavLink></li>
+            {usuarioActivo && (
+              <li><NavLink to="/mis-pedidos" className={claseActivo}>Mis pedidos</NavLink></li>
+            )}
           </ul>
 
           {pathname !== '/productos' && (
