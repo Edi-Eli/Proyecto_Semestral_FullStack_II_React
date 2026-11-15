@@ -29,6 +29,11 @@ export async function listarOfertas(opciones = {}) {
   return api.get(construirQuery('/api/productos/ofertas', opciones))
 }
 
+export async function listarCriticos(opciones = {}) {
+  if (USAR_MOCK) return mock.listarCriticos(opciones)
+  return extraerLista(await api.get(construirQuery('/api/productos/criticos', opciones)))
+}
+
 export async function listarCategorias() {
   if (USAR_MOCK) return mock.listarCategorias()
   return extraerLista(await api.get('/api/categorias'))
@@ -37,6 +42,21 @@ export async function listarCategorias() {
 export async function listarSubcategorias(categoriaId) {
   if (USAR_MOCK) return mock.listarSubcategorias(categoriaId)
   return extraerLista(await api.get(construirQuery('/api/subcategorias', { categoriaId })))
+}
+
+export async function crearCategoria(datos) {
+  if (USAR_MOCK) return mock.crearCategoria(datos)
+  return api.post('/api/categorias', datos)
+}
+
+export async function actualizarCategoria(id, datos) {
+  if (USAR_MOCK) return mock.actualizarCategoria(id, datos)
+  return api.put(`/api/categorias/${id}`, datos)
+}
+
+export async function eliminarCategoria(id) {
+  if (USAR_MOCK) return mock.eliminarCategoria(id)
+  return api.delete(`/api/categorias/${id}`)
 }
 
 export async function crearProducto(datos) {
@@ -65,8 +85,12 @@ export default {
   listar,
   detalle,
   listarOfertas,
+  listarCriticos,
   listarCategorias,
   listarSubcategorias,
+  crearCategoria,
+  actualizarCategoria,
+  eliminarCategoria,
   crearProducto,
   actualizarProducto,
   eliminarProducto,
