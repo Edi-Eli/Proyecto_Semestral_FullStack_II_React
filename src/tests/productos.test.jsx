@@ -12,8 +12,12 @@ vi.mock('../api/productos.js', () => ({
   listar: vi.fn(),
   detalle: vi.fn(),
   listarOfertas: vi.fn(),
+  listarCriticos: vi.fn(),
   listarCategorias: vi.fn(),
   listarSubcategorias: vi.fn(),
+  crearCategoria: vi.fn(),
+  actualizarCategoria: vi.fn(),
+  eliminarCategoria: vi.fn(),
 }))
 
 function crearProducto(overrides = {}) {

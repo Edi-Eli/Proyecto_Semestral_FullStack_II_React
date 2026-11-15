@@ -40,7 +40,7 @@ let productos = productosIniciales.map((producto, indice) => {
   }
 })
 
-const categorias = categoriasIniciales.map((categoria) => ({
+let categorias = categoriasIniciales.map((categoria) => ({
   ...categoria,
   imagenUrl: categoria.imagen,
 }))
@@ -48,6 +48,7 @@ const categorias = categoriasIniciales.map((categoria) => ({
 const subcategorias = [...subcategoriasIniciales]
 
 let siguienteId = productos.reduce((max, p) => Math.max(max, p.id), 0) + 1
+let siguienteIdCategoria = categorias.reduce((max, c) => Math.max(max, c.id), 0) + 1
 
 function esperar() {
   return new Promise((resolve) => setTimeout(resolve, LATENCIA_MS))
@@ -114,6 +115,11 @@ export async function listarOfertas(opciones = {}) {
   return paginar(filtrarProductos({ enOferta: true }), page, size)
 }
 
+export async function listarCriticos() {
+  await esperar()
+  return productos.filter((p) => p.activo && p.stock <= p.stockCritico)
+}
+
 export async function listarCategorias() {
   await esperar()
   return categorias
@@ -123,6 +129,29 @@ export async function listarSubcategorias(categoriaId) {
   await esperar()
   if (!categoriaId) return subcategorias
   return subcategorias.filter((s) => s.categoriaId === Number(categoriaId))
+}
+
+export async function crearCategoria(datos) {
+  await esperar()
+  const imagen = datos.imagen || ''
+  const categoria = { id: siguienteIdCategoria++, nombre: datos.nombre, imagen, imagenUrl: imagen }
+  categorias = [...categorias, categoria]
+  return categoria
+}
+
+export async function actualizarCategoria(id, datos) {
+  await esperar()
+  const indice = categorias.findIndex((c) => c.id === Number(id))
+  if (indice === -1) return null
+  categorias[indice] = { ...categorias[indice], ...datos, id: Number(id) }
+  if (datos.imagen !== undefined) categorias[indice].imagenUrl = datos.imagen
+  return categorias[indice]
+}
+
+export async function eliminarCategoria(id) {
+  await esperar()
+  categorias = categorias.filter((c) => c.id !== Number(id))
+  return true
 }
 
 export async function crearProducto(datos) {
