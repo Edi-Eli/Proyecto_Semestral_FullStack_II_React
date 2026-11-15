@@ -1,4 +1,3 @@
-// Auth (Login y Registro) — realizado por: Edi
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -8,8 +7,7 @@ import Login from '../pages/shop/Login.jsx'
 import Registro from '../pages/shop/Registro.jsx'
 import * as authApi from '../api/auth.js'
 
-// Se mockea la capa de API (no localStorage): los componentes se prueban contra
-// la interfaz de `src/api/auth.js`, tal como se hace en producción.
+
 vi.mock('../api/auth.js', () => ({
   login: vi.fn(),
   registro: vi.fn(),

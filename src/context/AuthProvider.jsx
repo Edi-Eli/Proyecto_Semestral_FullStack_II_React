@@ -8,7 +8,6 @@ import { actualizarUsuario } from '../api/usuarios.js'
 /**
  * AuthProvider — Autenticación real con JWT
  * ------------------------------------------------------------------
- * Responsable: Edi
  *
  * Estado que expone:
  *   usuario (alias usuarioActivo) → { run, nombre, correo, tipoUsuario } | null

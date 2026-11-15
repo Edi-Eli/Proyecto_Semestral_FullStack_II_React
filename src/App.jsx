@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppProviders from './context/AppProviders.jsx'
 import PublicLayout from './components/common/PublicLayout.jsx'
 import AdminLayout from './components/admin/AdminLayout.jsx'
+import ProtectedRoute from './components/common/ProtectedRoute.jsx'
 import RoleRoute from './components/common/RoleRoute.jsx'
 import Home from './pages/shop/Home.jsx'
 import Productos from './pages/shop/Productos.jsx'
@@ -18,6 +19,7 @@ import Contacto from './pages/shop/Contacto.jsx'
 import Nosotros from './pages/shop/Nosotros.jsx'
 import Blogs from './pages/shop/Blogs.jsx'
 import BlogDetalle from './pages/shop/BlogDetalle.jsx'
+import MisPedidos from './pages/shop/MisPedidos.jsx'
 import AdminDashboard from './admin/AdminDashboard.jsx'
 import AdminOrdenes from './admin/AdminOrdenes.jsx'
 import AdminProductos from './admin/AdminProductos.jsx'
@@ -51,6 +53,10 @@ function App() {
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/blogs/:id" element={<BlogDetalle />} />
             <Route path="/contacto" element={<Contacto />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/mis-pedidos" element={<MisPedidos />} />
+            </Route>
           </Route>
 
           <Route

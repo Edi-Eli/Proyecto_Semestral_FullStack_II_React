@@ -1,7 +1,6 @@
 /**
  * API de Usuarios (administración) — Ferretería Los Maestros
  * ------------------------------------------------------------------
- * Responsable: Edi
  *
  * Contrato asumido (debe coincidir con el documento 02 del backend):
  *   GET    /api/usuarios                 -> lista de usuarios

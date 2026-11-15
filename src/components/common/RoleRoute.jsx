@@ -5,7 +5,6 @@ import ProtectedRoute from './ProtectedRoute.jsx'
 /**
  * RoleRoute — exige sesión activa Y un rol permitido.
  * ------------------------------------------------------------------
- * Responsable: Edi.
  *
  * Se apoya en <ProtectedRoute> para la autenticación y agrega la verificación
  * del rol con `tieneRol()`. Si hay sesión pero el rol no está permitido,

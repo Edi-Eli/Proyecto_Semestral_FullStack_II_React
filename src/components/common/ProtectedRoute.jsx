@@ -4,7 +4,6 @@ import { useAuth } from '../../context/authContext.js'
 /**
  * ProtectedRoute — exige una sesión activa (token JWT presente).
  * ------------------------------------------------------------------
- * Responsable: Edi.
  *
  * - Si el usuario está autenticado: renderiza `children` o el `<Outlet />`
  *   de las rutas anidadas.
