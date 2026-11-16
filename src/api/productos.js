@@ -14,9 +14,23 @@ function construirQuery(ruta, parametros = {}) {
   return texto ? `${ruta}?${texto}` : ruta
 }
 
+function normalizarPagina(datos) {
+  if (!datos) return { content: [], totalElements: 0, totalPages: 1, number: 0, size: 0 }
+  if (Array.isArray(datos.content)) return datos
+  const content = extraerLista(datos)
+  const page = datos.page || {}
+  return {
+    content,
+    totalElements: page.totalElements ?? content.length,
+    totalPages: page.totalPages ?? 1,
+    number: page.number ?? 0,
+    size: page.size ?? content.length,
+  }
+}
+
 export async function listar(opciones = {}) {
   if (USAR_MOCK) return mock.listarProductos(opciones)
-  return api.get(construirQuery('/api/productos', opciones))
+  return normalizarPagina(await api.get(construirQuery('/api/productos', opciones)))
 }
 
 export async function detalle(id) {
@@ -26,7 +40,7 @@ export async function detalle(id) {
 
 export async function listarOfertas(opciones = {}) {
   if (USAR_MOCK) return mock.listarOfertas(opciones)
-  return api.get(construirQuery('/api/productos/ofertas', opciones))
+  return normalizarPagina(await api.get(construirQuery('/api/productos/ofertas', opciones)))
 }
 
 export async function listarCriticos(opciones = {}) {
