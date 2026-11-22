@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { enviarMensaje } from '../../api/contacto.js'
 import { requisitosCorreo, requisitosRequerido } from '../../utils/camposFormulario.js'
+import { claseCampo } from '../../utils/clasesFormulario.js'
 
 function Contacto() {
   const [nombre, setNombre] = useState('')
@@ -32,12 +33,6 @@ function Contacto() {
     } finally {
       setEnviando(false)
     }
-  }
-
-  function claseCampo(errores, valor) {
-    if (errores.length) return 'form-control input-invalid'
-    if (String(valor).length > 0) return 'form-control input-valid'
-    return 'form-control'
   }
 
   return (

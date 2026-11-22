@@ -8,7 +8,6 @@
  * Contrato asumido (debe coincidir con el documento 02 del backend):
  *   POST /api/auth/login     { correo, password }  ->  { token, usuario }
  *   POST /api/auth/registro  { ...datos cliente }  ->  { token?, usuario? }
- *   GET  /api/auth/sesion                          ->  { usuario } (valida el token)
  *
  * Regla de seguridad (área K.1): en la sesión solo se guarda el token y la
  * información mínima del usuario. NUNCA la contraseña ni el objeto completo.
@@ -18,7 +17,6 @@ import api, { guardarSesion, limpiarSesion, leerSesion } from './client.js'
 const RUTAS = {
   login: '/api/auth/login',
   registro: '/api/auth/registro',
-  sesion: '/api/auth/sesion',
 }
 
 /**
@@ -74,16 +72,6 @@ export async function registro(datosUsuario) {
   return { token: token || null, usuario }
 }
 
-/**
- * Revalida el token guardado consultando la sesión actual. Se usa al recargar
- * la app para decidir si el usuario sigue autenticado (token no expirado).
- * @returns {Promise<object|null>} usuario mínimo o null
- */
-export async function validarSesion() {
-  const datos = await api.get(RUTAS.sesion)
-  return usuarioMinimo(datos?.usuario || datos?.user || datos)
-}
-
 /** Cierra la sesión en el cliente (borra token y usuario del almacenamiento). */
 export function logout() {
   limpiarSesion()
@@ -91,4 +79,4 @@ export function logout() {
 
 export { leerSesion }
 
-export default { login, registro, validarSesion, logout, leerSesion, usuarioMinimo }
+export default { login, registro, logout, leerSesion, usuarioMinimo }

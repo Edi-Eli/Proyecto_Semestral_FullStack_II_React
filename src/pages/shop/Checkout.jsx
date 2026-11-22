@@ -14,7 +14,7 @@ import { useCart } from '../../context/cartContext.js'
 import * as pedidosApi from '../../api/pedidos.js'
 import * as cuentasApi from '../../api/cuentasCorrientes.js'
 import { regiones, getComunas, getRegionById } from '../../data/regiones.js'
-import { formatearPrecioCLP } from '../../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../../utils/formato.js'
 import { esCorreoValido, requerido } from '../../utils/validaciones.js'
 
 const TIENDA = { lat: -29.9045, lng: -71.2489, nombre: 'Ferretería Los Maestros — La Serena' }

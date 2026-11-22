@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as pedidosApi from '../../api/pedidos.js'
-import { formatearPrecioCLP } from '../../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../../utils/formato.js'
 import BoletaModal from '../../components/admin/BoletaModal.jsx'
 import Loader from '../../components/common/Loader.jsx'
 import MensajeError from '../../components/common/MensajeError.jsx'

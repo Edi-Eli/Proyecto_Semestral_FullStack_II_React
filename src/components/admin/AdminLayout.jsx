@@ -4,8 +4,10 @@ import { useAuth } from '../../context/authContext.js'
 
 function AdminLayout() {
   const { usuarioActivo } = useAuth()
+  const rol = usuarioActivo?.tipoUsuario
+  const puedeEntrar = rol === 'Administrador' || rol === 'Vendedor'
 
-  if (!usuarioActivo || usuarioActivo.tipoUsuario !== 'Administrador') {
+  if (!usuarioActivo || !puedeEntrar) {
     return <Navigate to="/login" replace />
   }
 

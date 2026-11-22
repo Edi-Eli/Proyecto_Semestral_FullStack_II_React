@@ -3,6 +3,7 @@ import { useAuth } from '../../context/authContext.js'
 
 function AdminSidebar() {
   const { usuarioActivo, logout } = useAuth()
+  const esAdmin = usuarioActivo?.tipoUsuario === 'Administrador'
 
   const linkClase = ({ isActive }) =>
     'd-flex align-items-center gap-2 px-3 py-2 text-decoration-none rounded text-white' +
@@ -12,7 +13,7 @@ function AdminSidebar() {
     <aside className="admin-sidebar d-flex flex-column">
       <div className="admin-logo">
         <img src="/assets/images/logo.png" alt="Logo" />
-        <p>Panel Administrador</p>
+        <p>{esAdmin ? 'Panel Administrador' : 'Panel de Gestión'}</p>
       </div>
       <nav className="admin-menu d-flex flex-column flex-grow-1">
         <NavLink to="/admin" end className={linkClase}>
@@ -24,11 +25,14 @@ function AdminSidebar() {
         <NavLink to="/admin/productos" className={linkClase}>
           <i className="bi bi-box-seam"></i> Productos
         </NavLink>
-        <NavLink to="/admin/categorias" className={linkClase}>
-          <i className="bi bi-tags"></i> Categorías
+        <NavLink to="/admin/productos/criticos" className={linkClase}>
+          <i className="bi bi-exclamation-triangle"></i> Productos Críticos
         </NavLink>
-        <NavLink to="/admin/usuarios" className={linkClase}>
-          <i className="bi bi-people"></i> Usuarios
+        <NavLink to="/admin/ofertas" className={linkClase}>
+          <i className="bi bi-percent"></i> Ofertas
+        </NavLink>
+        <NavLink to="/admin/cuentas" className={linkClase}>
+          <i className="bi bi-credit-card"></i> Cuentas Corrientes
         </NavLink>
         <NavLink to="/admin/reportes" className={linkClase}>
           <i className="bi bi-graph-up"></i> Reportes
@@ -36,6 +40,19 @@ function AdminSidebar() {
         <NavLink to="/admin/contacto" className={linkClase}>
           <i className="bi bi-envelope"></i> Contactos
         </NavLink>
+        {esAdmin && (
+          <>
+            <NavLink to="/admin/categorias" className={linkClase}>
+              <i className="bi bi-tags"></i> Categorías
+            </NavLink>
+            <NavLink to="/admin/subcategorias" className={linkClase}>
+              <i className="bi bi-tags-fill"></i> Subcategorías
+            </NavLink>
+            <NavLink to="/admin/usuarios" className={linkClase}>
+              <i className="bi bi-people"></i> Usuarios
+            </NavLink>
+          </>
+        )}
         <NavLink to="/admin/perfil" className={linkClase}>
           <i className="bi bi-person-circle"></i> Perfil
         </NavLink>
@@ -53,7 +70,9 @@ function AdminSidebar() {
           <i className="bi bi-box-arrow-left me-1"></i> Cerrar Sesión
         </button>
         {usuarioActivo && (
-          <small className="text-center text-white-50">{usuarioActivo.nombre}</small>
+          <small className="text-center text-white-50">
+            {usuarioActivo.nombre} · {usuarioActivo.tipoUsuario}
+          </small>
         )}
       </div>
     </aside>

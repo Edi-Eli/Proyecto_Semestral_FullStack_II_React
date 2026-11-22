@@ -12,7 +12,6 @@ import Ofertas from './pages/shop/Ofertas.jsx'
 import Carrito from './pages/shop/Carrito.jsx'
 import Checkout from './pages/shop/Checkout.jsx'
 import PagoExitoso from './pages/shop/PagoExitoso.jsx'
-import PagoError from './pages/shop/PagoError.jsx'
 import Login from './pages/shop/Login.jsx'
 import Registro from './pages/shop/Registro.jsx'
 import Contacto from './pages/shop/Contacto.jsx'
@@ -20,16 +19,20 @@ import Nosotros from './pages/shop/Nosotros.jsx'
 import Blogs from './pages/shop/Blogs.jsx'
 import BlogDetalle from './pages/shop/BlogDetalle.jsx'
 import MisPedidos from './pages/shop/MisPedidos.jsx'
+import MiCuenta from './pages/shop/MiCuenta.jsx'
 import AdminDashboard from './admin/AdminDashboard.jsx'
 import AdminOrdenes from './admin/AdminOrdenes.jsx'
 import AdminProductos from './admin/AdminProductos.jsx'
 import AdminCriticos from './admin/AdminCriticos.jsx'
 import AdminCategorias from './admin/AdminCategorias.jsx'
+import AdminSubcategorias from './admin/AdminSubcategorias.jsx'
 import AdminUsuarios from './admin/AdminUsuarios.jsx'
 import AdminHistorial from './admin/AdminHistorial.jsx'
 import AdminReportes from './admin/AdminReportes.jsx'
 import AdminPerfil from './admin/AdminPerfil.jsx'
 import AdminContactos from './admin/AdminContactos.jsx'
+import AdminOfertas from './admin/AdminOfertas.jsx'
+import AdminCuentas from './admin/AdminCuentas.jsx'
 
 function App() {
   return (
@@ -46,7 +49,6 @@ function App() {
             <Route path="/carrito" element={<Carrito />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/pago-exitoso" element={<PagoExitoso />} />
-            <Route path="/pago-error" element={<PagoError />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
             <Route path="/nosotros" element={<Nosotros />} />
@@ -57,12 +59,16 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/mis-pedidos" element={<MisPedidos />} />
             </Route>
+
+            <Route element={<RoleRoute roles={['Cliente', 'Vendedor']} />}>
+              <Route path="/mi-cuenta" element={<MiCuenta />} />
+            </Route>
           </Route>
 
           <Route
             path="/admin"
             element={
-              <RoleRoute roles={['Administrador']}>
+              <RoleRoute roles={['Administrador', 'Vendedor']}>
                 <AdminLayout />
               </RoleRoute>
             }
@@ -71,12 +77,43 @@ function App() {
             <Route path="ordenes" element={<AdminOrdenes />} />
             <Route path="productos" element={<AdminProductos />} />
             <Route path="productos/criticos" element={<AdminCriticos />} />
-            <Route path="categorias" element={<AdminCategorias />} />
-            <Route path="usuarios" element={<AdminUsuarios />} />
-            <Route path="usuarios/:id/historial" element={<AdminHistorial />} />
+            <Route path="ofertas" element={<AdminOfertas />} />
+            <Route path="cuentas" element={<AdminCuentas />} />
             <Route path="reportes" element={<AdminReportes />} />
             <Route path="contacto" element={<AdminContactos />} />
             <Route path="perfil" element={<AdminPerfil />} />
+            <Route
+              path="categorias"
+              element={
+                <RoleRoute roles={['Administrador']} sinAccesoA="/admin">
+                  <AdminCategorias />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="subcategorias"
+              element={
+                <RoleRoute roles={['Administrador']} sinAccesoA="/admin">
+                  <AdminSubcategorias />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="usuarios"
+              element={
+                <RoleRoute roles={['Administrador']} sinAccesoA="/admin">
+                  <AdminUsuarios />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="usuarios/:id/historial"
+              element={
+                <RoleRoute roles={['Administrador']} sinAccesoA="/admin">
+                  <AdminHistorial />
+                </RoleRoute>
+              }
+            />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

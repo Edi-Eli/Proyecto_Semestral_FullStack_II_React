@@ -8,6 +8,7 @@ import {
   requisitosRun,
   requisitosRequerido,
 } from '../../utils/camposFormulario.js'
+import { claseCampo } from '../../utils/clasesFormulario.js'
 
 function Registro() {
   const { registrar } = useAuth()
@@ -84,12 +85,6 @@ function Registro() {
 
     // Si el backend devolvió token, la sesión ya quedó iniciada; si no, ir a login.
     navigate(resultado.autenticado ? '/' : '/login')
-  }
-
-  function claseCampo(errores, valor) {
-    if (errores.length) return 'form-control input-invalid'
-    if (String(valor).length > 0) return 'form-control input-valid'
-    return 'form-control'
   }
 
   return (

@@ -3,7 +3,7 @@ import BoletaModal from '../components/admin/BoletaModal.jsx'
 import Loader from '../components/common/Loader.jsx'
 import MensajeError from '../components/common/MensajeError.jsx'
 import * as pedidosApi from '../api/pedidos.js'
-import { formatearPrecioCLP } from '../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../utils/formato.js'
 
 const ESTADOS = ['PENDIENTE', 'APROBADA', 'DESPACHADA', 'ENTREGADA', 'PAGADA', 'RECHAZADA']
 const ETIQUETA_ESTADO = {
@@ -35,10 +35,10 @@ export default function AdminOrdenes() {
   useEffect(() => {
     let vigente = true
     pedidosApi
-      .listar()
-      .then((lista) => {
+      .listarPagina({ page: 0, size: 1000 })
+      .then((pagina) => {
         if (!vigente) return
-        setOrdenes(Array.isArray(lista) ? lista : [])
+        setOrdenes(pagina?.content || [])
         setError(null)
         setCargando(false)
       })

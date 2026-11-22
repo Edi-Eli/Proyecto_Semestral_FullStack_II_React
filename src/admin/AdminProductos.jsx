@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as productosApi from '../api/productos.js'
-import { formatearPrecioCLP } from '../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../utils/formato.js'
+import { nombreCategoria } from '../utils/productoHelpers.js'
 import Loader from '../components/common/Loader.jsx'
 import MensajeError from '../components/common/MensajeError.jsx'
+import { useAuth } from '../context/authContext.js'
 import { requerido, maxCaracteres, soloEnteros, soloDecimales } from '../utils/validaciones.js'
 
 const TAMANO_LISTA = 200
@@ -12,11 +14,18 @@ const FORM_VACIO = {
   codigo: '',
   nombre: '',
   descripcion: '',
+  marca: '',
+  unidad: '',
+  precioCompra: '',
   precio: '',
+  enOferta: false,
+  precioOferta: '',
   stock: '',
   stockCritico: '',
   categoriaId: '',
+  subcategoriaId: '',
   imagen: '',
+  activo: true,
 }
 
 function soloDecimalPositivo(valor) {
@@ -24,24 +33,42 @@ function soloDecimalPositivo(valor) {
   return Number(String(valor).replace(',', '.')) >= 0
 }
 
-function validarCampo(campo, valor) {
-  const v = String(valor).trim()
+function validarCampo(campo, valor, form = {}) {
+  const v = String(valor ?? '').trim()
   switch (campo) {
     case 'codigo':
       if (!requerido(v)) return 'El código es requerido.'
       if (v.length < 3) return 'El código debe tener al menos 3 caracteres.'
+      if (!maxCaracteres(v, 20)) return 'El código no puede superar los 20 caracteres.'
       return ''
     case 'nombre':
       if (!requerido(v)) return 'El nombre es requerido.'
-      if (!maxCaracteres(v, 100)) return 'El nombre no puede superar los 100 caracteres.'
+      if (!maxCaracteres(v, 150)) return 'El nombre no puede superar los 150 caracteres.'
       return ''
     case 'descripcion':
       if (v !== '' && !maxCaracteres(v, 500))
         return 'La descripción no puede superar los 500 caracteres.'
       return ''
+    case 'marca':
+      if (v !== '' && !maxCaracteres(v, 80)) return 'La marca no puede superar los 80 caracteres.'
+      return ''
+    case 'unidad':
+      if (v !== '' && !maxCaracteres(v, 30)) return 'La unidad no puede superar los 30 caracteres.'
+      return ''
+    case 'precioCompra':
+      if (!requerido(v)) return 'El precio de compra es requerido.'
+      if (!soloDecimalPositivo(v)) return 'El precio de compra debe ser un número mayor o igual a 0.'
+      return ''
     case 'precio':
       if (!requerido(v)) return 'El precio es requerido.'
       if (!soloDecimalPositivo(v)) return 'El precio debe ser un número mayor o igual a 0.'
+      return ''
+    case 'precioOferta':
+      if (form.enOferta) {
+        if (!requerido(v)) return 'El precio de oferta es requerido cuando el producto está en oferta.'
+        if (!soloDecimalPositivo(v)) return 'El precio de oferta debe ser un número mayor o igual a 0.'
+        if (Number(String(v).replace(',', '.')) <= 0) return 'El precio de oferta debe ser mayor que 0.'
+      }
       return ''
     case 'stock':
       if (!requerido(v)) return 'El stock es requerido.'
@@ -55,14 +82,20 @@ function validarCampo(campo, valor) {
     case 'categoriaId':
       if (!requerido(v)) return 'Debe seleccionar una categoría.'
       return ''
+    case 'subcategoriaId':
+      if (!requerido(v)) return 'Debe seleccionar una subcategoría.'
+      return ''
     default:
       return ''
   }
 }
 
 export default function AdminProductos() {
+  const { usuarioActivo } = useAuth()
+  const esAdmin = usuarioActivo?.tipoUsuario === 'Administrador'
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
+  const [subcategorias, setSubcategorias] = useState([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [errorAccion, setErrorAccion] = useState(null)
@@ -80,11 +113,13 @@ export default function AdminProductos() {
     Promise.all([
       productosApi.listar({ size: TAMANO_LISTA }),
       productosApi.listarCategorias(),
+      productosApi.listarSubcategorias(),
     ])
-      .then(([pagina, cats]) => {
+      .then(([pagina, cats, subs]) => {
         if (!vigente) return
         setProductos(pagina?.content || [])
         setCategorias(cats || [])
+        setSubcategorias(subs || [])
         setError(null)
         setCargando(false)
       })
@@ -107,10 +142,33 @@ export default function AdminProductos() {
   const mostrarError = (campo) =>
     (tocado[campo] || enviado) && errores[campo] ? errores[campo] : ''
 
+  const subcategoriasFiltradas = subcategorias.filter(
+    (subcategoria) => String(subcategoria.categoriaId) === String(form.categoriaId),
+  )
+
   const handleChange = (campo) => (evento) => {
     const valor = evento.target.value
-    setForm((anterior) => ({ ...anterior, [campo]: valor }))
-    setErrores((anterior) => ({ ...anterior, [campo]: validarCampo(campo, valor) }))
+    const siguiente = { ...form, [campo]: valor }
+    if (campo === 'categoriaId') {
+      siguiente.subcategoriaId = ''
+    }
+    setForm(siguiente)
+    setErrores((anterior) => ({
+      ...anterior,
+      [campo]: validarCampo(campo, valor, siguiente),
+      ...(campo === 'categoriaId' ? { subcategoriaId: '' } : {}),
+    }))
+  }
+
+  const handleCheckboxChange = (campo) => (evento) => {
+    const valor = evento.target.checked
+    const siguiente = { ...form, [campo]: valor }
+    setForm(siguiente)
+    setErrores((anterior) => ({
+      ...anterior,
+      [campo]: validarCampo(campo, valor, siguiente),
+      ...(campo === 'enOferta' ? { precioOferta: validarCampo('precioOferta', form.precioOferta, siguiente) } : {}),
+    }))
   }
 
   const handleBlur = (campo) => () => setTocado((anterior) => ({ ...anterior, [campo]: true }))
@@ -128,14 +186,21 @@ export default function AdminProductos() {
     const producto = productos.find((p) => p.id === Number(id))
     if (!producto) return
     setForm({
-      codigo: producto.codigo,
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      precio: String(producto.precio),
-      stock: String(producto.stock),
-      stockCritico: String(producto.stockCritico),
-      categoriaId: String(producto.categoriaId),
-      imagen: producto.imagen || '',
+      codigo: producto.codigo ?? '',
+      nombre: producto.nombre ?? '',
+      descripcion: producto.descripcion ?? '',
+      marca: producto.marca ?? '',
+      unidad: producto.unidad ?? '',
+      precioCompra: producto.precioCompra != null ? String(producto.precioCompra) : '',
+      precio: producto.precio != null ? String(producto.precio) : '',
+      enOferta: Boolean(producto.enOferta),
+      precioOferta: producto.precioOferta != null ? String(producto.precioOferta) : '',
+      stock: producto.stock != null ? String(producto.stock) : '',
+      stockCritico: producto.stockCritico != null ? String(producto.stockCritico) : '',
+      categoriaId: producto.categoriaId != null ? String(producto.categoriaId) : '',
+      subcategoriaId: producto.subcategoriaId != null ? String(producto.subcategoriaId) : '',
+      imagen: producto.imagen ?? '',
+      activo: producto.activo !== false,
     })
     setIdEditar(producto.id)
     setErrores({})
@@ -164,24 +229,31 @@ export default function AdminProductos() {
 
     const nuevosErrores = {}
     Object.keys(FORM_VACIO).forEach((campo) => {
-      if (campo === 'imagen') return
-      nuevosErrores[campo] = validarCampo(campo, form[campo])
+      if (campo === 'imagen' || campo === 'activo' || campo === 'enOferta') return
+      nuevosErrores[campo] = validarCampo(campo, form[campo], form)
     })
+    if (!form.enOferta) {
+      nuevosErrores.precioOferta = ''
+    }
     setErrores(nuevosErrores)
 
     if (Object.values(nuevosErrores).some((m) => m !== '')) return
 
     const producto = {
-      codigo: form.codigo.trim(),
+      codigo: form.codigo.trim().toUpperCase(),
+      subcategoriaId: Number(form.subcategoriaId),
       nombre: form.nombre.trim(),
       descripcion: form.descripcion.trim(),
-      precio: Number(form.precio.replace(',', '.')),
+      marca: form.marca.trim() || null,
+      unidad: form.unidad.trim() || null,
+      precioCompra: Number(String(form.precioCompra).replace(',', '.')),
+      precio: Number(String(form.precio).replace(',', '.')),
+      enOferta: Boolean(form.enOferta),
+      precioOferta: form.enOferta ? Number(String(form.precioOferta).replace(',', '.')) : null,
       stock: Number(form.stock),
       stockCritico: form.stockCritico.trim() === '' ? 0 : Number(form.stockCritico),
-      categoriaId: Number(form.categoriaId),
-      imagen: form.imagen.trim(),
-      enOferta: false,
-      precioOferta: 0,
+      imagen: form.imagen.trim() || null,
+      activo: Boolean(form.activo),
     }
 
     try {
@@ -206,11 +278,6 @@ export default function AdminProductos() {
     } finally {
       setGuardando(false)
     }
-  }
-
-  const nombreCategoria = (id) => {
-    const cat = categorias.find((c) => Number(c.id) === Number(id))
-    return cat ? cat.nombre : '-'
   }
 
   return (
@@ -254,7 +321,7 @@ export default function AdminProductos() {
                     <tr key={producto.id}>
                       <td>{producto.codigo}</td>
                       <td>{producto.nombre}</td>
-                      <td>{producto.categoriaNombre || nombreCategoria(producto.categoriaId)}</td>
+                      <td>{producto.categoriaNombre || nombreCategoria(categorias, producto.categoriaId)}</td>
                       <td>{formatearPrecioCLP(producto.precio)}</td>
                       <td
                         className={producto.stock <= producto.stockCritico ? 'stock-bajo' : ''}
@@ -270,13 +337,15 @@ export default function AdminProductos() {
                         >
                           Editar
                         </button>
-                        <button
-                          type="button"
-                          className="btn-admin btn-eliminar"
-                          onClick={() => eliminarProducto(producto.id)}
-                        >
-                          Eliminar
-                        </button>
+                        {esAdmin && (
+                          <button
+                            type="button"
+                            className="btn-admin btn-eliminar"
+                            onClick={() => eliminarProducto(producto.id)}
+                          >
+                            Eliminar
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -332,6 +401,50 @@ export default function AdminProductos() {
                 </div>
 
                 <div className="campo-form">
+                  <label htmlFor="marca-producto">Marca (opcional)</label>
+                  <input
+                    type="text"
+                    id="marca-producto"
+                    maxLength="80"
+                    value={form.marca}
+                    onChange={handleChange('marca')}
+                    onBlur={handleBlur('marca')}
+                    className={mostrarError('marca') ? 'input-error' : ''}
+                  />
+                  <p className="mensaje-error">{mostrarError('marca')}</p>
+                </div>
+
+                <div className="campo-form">
+                  <label htmlFor="unidad-producto">Unidad (opcional)</label>
+                  <input
+                    type="text"
+                    id="unidad-producto"
+                    maxLength="30"
+                    placeholder="Ej: saco, caja, unidad"
+                    value={form.unidad}
+                    onChange={handleChange('unidad')}
+                    onBlur={handleBlur('unidad')}
+                    className={mostrarError('unidad') ? 'input-error' : ''}
+                  />
+                  <p className="mensaje-error">{mostrarError('unidad')}</p>
+                </div>
+
+                <div className="campo-form">
+                  <label htmlFor="precio-compra-producto">Precio compra</label>
+                  <input
+                    type="text"
+                    id="precio-compra-producto"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={form.precioCompra}
+                    onChange={handleChange('precioCompra')}
+                    onBlur={handleBlur('precioCompra')}
+                    className={mostrarError('precioCompra') ? 'input-error' : ''}
+                  />
+                  <p className="mensaje-error">{mostrarError('precioCompra')}</p>
+                </div>
+
+                <div className="campo-form">
                   <label htmlFor="precio-producto">Precio</label>
                   <input
                     type="text"
@@ -344,6 +457,35 @@ export default function AdminProductos() {
                     className={mostrarError('precio') ? 'input-error' : ''}
                   />
                   <p className="mensaje-error">{mostrarError('precio')}</p>
+                </div>
+
+                <div className="campo-form">
+                  <label htmlFor="en-oferta-producto" className="form-check-label">
+                    <input
+                      type="checkbox"
+                      id="en-oferta-producto"
+                      className="form-check-input me-2"
+                      checked={form.enOferta}
+                      onChange={handleCheckboxChange('enOferta')}
+                    />
+                    En oferta
+                  </label>
+                </div>
+
+                <div className="campo-form">
+                  <label htmlFor="precio-oferta-producto">Precio oferta</label>
+                  <input
+                    type="text"
+                    id="precio-oferta-producto"
+                    inputMode="decimal"
+                    placeholder="0"
+                    disabled={!form.enOferta}
+                    value={form.precioOferta}
+                    onChange={handleChange('precioOferta')}
+                    onBlur={handleBlur('precioOferta')}
+                    className={mostrarError('precioOferta') ? 'input-error' : ''}
+                  />
+                  <p className="mensaje-error">{mostrarError('precioOferta')}</p>
                 </div>
 
                 <div className="campo-form">
@@ -396,6 +538,26 @@ export default function AdminProductos() {
                 </div>
 
                 <div className="campo-form">
+                  <label htmlFor="subcategoria-producto">Subcategoría</label>
+                  <select
+                    id="subcategoria-producto"
+                    value={form.subcategoriaId}
+                    onChange={handleChange('subcategoriaId')}
+                    onBlur={handleBlur('subcategoriaId')}
+                    disabled={!form.categoriaId}
+                    className={mostrarError('subcategoriaId') ? 'input-error' : ''}
+                  >
+                    <option value="">Seleccione una subcategoría</option>
+                    {subcategoriasFiltradas.map((subcategoria) => (
+                      <option key={subcategoria.id} value={subcategoria.id}>
+                        {subcategoria.nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mensaje-error">{mostrarError('subcategoriaId')}</p>
+                </div>
+
+                <div className="campo-form">
                   <label htmlFor="imagen-producto">Imagen (opcional)</label>
                   <input
                     type="text"
@@ -405,6 +567,19 @@ export default function AdminProductos() {
                     onChange={handleChange('imagen')}
                   />
                   <p className="mensaje-error"></p>
+                </div>
+
+                <div className="campo-form">
+                  <label htmlFor="activo-producto" className="form-check-label">
+                    <input
+                      type="checkbox"
+                      id="activo-producto"
+                      className="form-check-input me-2"
+                      checked={form.activo}
+                      onChange={handleCheckboxChange('activo')}
+                    />
+                    Activo
+                  </label>
                 </div>
 
                 <div className="botones-form">

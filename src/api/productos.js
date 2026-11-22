@@ -1,7 +1,8 @@
+/**
+ * API de Productos y Categorías.
+ * Consume directamente el backend Spring Boot (doc 02 §4.3).
+ */
 import api, { extraerLista } from './client.js'
-import * as mock from './mock.js'
-
-const USAR_MOCK = (import.meta.env.VITE_USAR_MOCK ?? 'true') !== 'false'
 
 function construirQuery(ruta, parametros = {}) {
   const query = new URLSearchParams()
@@ -14,6 +15,7 @@ function construirQuery(ruta, parametros = {}) {
   return texto ? `${ruta}?${texto}` : ruta
 }
 
+/** Normaliza la respuesta de Spring (Page o HATEOAS) al formato que usan las vistas. */
 function normalizarPagina(datos) {
   if (!datos) return { content: [], totalElements: 0, totalPages: 1, number: 0, size: 0 }
   if (Array.isArray(datos.content)) return datos
@@ -29,71 +31,68 @@ function normalizarPagina(datos) {
 }
 
 export async function listar(opciones = {}) {
-  if (USAR_MOCK) return mock.listarProductos(opciones)
   return normalizarPagina(await api.get(construirQuery('/api/productos', opciones)))
 }
 
 export async function detalle(id) {
-  if (USAR_MOCK) return mock.obtenerProducto(id)
   return api.get(`/api/productos/${id}`)
 }
 
 export async function listarOfertas(opciones = {}) {
-  if (USAR_MOCK) return mock.listarOfertas(opciones)
   return normalizarPagina(await api.get(construirQuery('/api/productos/ofertas', opciones)))
 }
 
 export async function listarCriticos(opciones = {}) {
-  if (USAR_MOCK) return mock.listarCriticos(opciones)
   return extraerLista(await api.get(construirQuery('/api/productos/criticos', opciones)))
 }
 
 export async function listarCategorias() {
-  if (USAR_MOCK) return mock.listarCategorias()
   return extraerLista(await api.get('/api/categorias'))
 }
 
 export async function listarSubcategorias(categoriaId) {
-  if (USAR_MOCK) return mock.listarSubcategorias(categoriaId)
   return extraerLista(await api.get(construirQuery('/api/subcategorias', { categoriaId })))
 }
 
+export async function crearSubcategoria(datos) {
+  return api.post('/api/subcategorias', datos)
+}
+
+export async function actualizarSubcategoria(id, datos) {
+  return api.put(`/api/subcategorias/${id}`, datos)
+}
+
+export async function eliminarSubcategoria(id) {
+  return api.delete(`/api/subcategorias/${id}`)
+}
+
 export async function crearCategoria(datos) {
-  if (USAR_MOCK) return mock.crearCategoria(datos)
   return api.post('/api/categorias', datos)
 }
 
 export async function actualizarCategoria(id, datos) {
-  if (USAR_MOCK) return mock.actualizarCategoria(id, datos)
   return api.put(`/api/categorias/${id}`, datos)
 }
 
 export async function eliminarCategoria(id) {
-  if (USAR_MOCK) return mock.eliminarCategoria(id)
   return api.delete(`/api/categorias/${id}`)
 }
 
 export async function crearProducto(datos) {
-  if (USAR_MOCK) return mock.crearProducto(datos)
   return api.post('/api/productos', datos)
 }
 
 export async function actualizarProducto(id, datos) {
-  if (USAR_MOCK) return mock.actualizarProducto(id, datos)
   return api.put(`/api/productos/${id}`, datos)
 }
 
 export async function eliminarProducto(id) {
-  if (USAR_MOCK) return mock.eliminarProducto(id)
   return api.delete(`/api/productos/${id}`)
 }
 
 export async function actualizarStock(id, datos) {
-  if (USAR_MOCK) return mock.actualizarStock(id, datos)
   return api.patch(`/api/productos/${id}/stock`, datos)
 }
-
-export const usarMock = USAR_MOCK
 
 export default {
   listar,
@@ -105,6 +104,9 @@ export default {
   crearCategoria,
   actualizarCategoria,
   eliminarCategoria,
+  crearSubcategoria,
+  actualizarSubcategoria,
+  eliminarSubcategoria,
   crearProducto,
   actualizarProducto,
   eliminarProducto,

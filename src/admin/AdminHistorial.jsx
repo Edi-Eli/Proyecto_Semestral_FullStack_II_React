@@ -6,12 +6,8 @@ import { Link, useParams } from 'react-router-dom'
 import Loader from '../components/common/Loader.jsx'
 import MensajeError from '../components/common/MensajeError.jsx'
 import * as pedidosApi from '../api/pedidos.js'
-import * as usuariosApiReal from '../api/usuarios.js'
-import * as usuariosMock from '../utils/mocks/usuarios.mock.js'
-import { formatearPrecioCLP } from '../utils/productoHelpers.js'
-
-const USAR_MOCK = (import.meta.env.VITE_USAR_MOCK ?? 'true') !== 'false'
-const usuariosApi = USAR_MOCK ? usuariosMock : usuariosApiReal
+import * as usuariosApi from '../api/usuarios.js'
+import { formatearPrecioCLP } from '../utils/formato.js'
 
 const ETIQUETA_ESTADO = {
   PENDIENTE: 'Pendiente', APROBADA: 'Aprobada', DESPACHADA: 'Despachada',
@@ -37,7 +33,7 @@ export default function AdminHistorial() {
     let vigente = true
     usuariosApi
       .obtenerUsuario(id)
-      .then((u) => pedidosApi.porUsuario(u.correo).then((lista) => ({ u, lista })))
+      .then((u) => pedidosApi.porUsuario(u.id).then((lista) => ({ u, lista })))
       .then(({ u, lista }) => {
         if (!vigente) return
         setUsuario(u)

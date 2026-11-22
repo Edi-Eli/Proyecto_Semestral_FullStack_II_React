@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext.js'
 import { requisitosCorreo, requisitosContrasena } from '../../utils/camposFormulario.js'
+import { claseCampo } from '../../utils/clasesFormulario.js'
 
 function Login() {
   const { login } = useAuth()
@@ -41,15 +42,18 @@ function Login() {
     const destino = location.state?.desde
     if (destino) {
       navigate(destino, { replace: true })
-    } else if (resultado.usuario?.tipoUsuario === 'Administrador') {
+    } else if (
+      resultado.usuario?.tipoUsuario === 'Administrador' ||
+      resultado.usuario?.tipoUsuario === 'Vendedor'
+    ) {
       navigate('/admin')
     } else {
       navigate('/')
     }
   }
 
-  const claseCorreo = erroresCorreo.length ? 'form-control input-invalid' : correo ? 'form-control input-valid' : 'form-control'
-  const claseContrasena = erroresContrasena.length ? 'form-control input-invalid' : contrasena ? 'form-control input-valid' : 'form-control'
+  const claseCorreo = claseCampo(erroresCorreo, correo)
+  const claseContrasena = claseCampo(erroresContrasena, contrasena)
 
   return (
     <main>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
+import { formatearPrecioCLP } from '../../utils/formato.js'
 import {
-  formatearPrecioCLP,
   precioFinal,
   esGratis,
   tieneOferta,

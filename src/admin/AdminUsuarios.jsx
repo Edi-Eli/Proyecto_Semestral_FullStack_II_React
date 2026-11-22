@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { regiones, getComunas } from "../data/regiones";
 import {
-    listarUsuarios,
+    listarUsuariosTodos,
     crearUsuario,
     actualizarUsuario,
     eliminarUsuario,
@@ -81,7 +81,7 @@ export default function AdminUsuarios() {
     /** Trae los usuarios desde la API (área A). */
     const cargarUsuarios = useCallback(async () => {
         try {
-            const lista = await listarUsuarios();
+            const lista = await listarUsuariosTodos();
             setUsuarios(Array.isArray(lista) ? lista : []);
             setError("");
         } catch (e) {
@@ -208,7 +208,7 @@ export default function AdminUsuarios() {
             nombre: form.nombre.trim(),
             apellidos: form.apellidos.trim(),
             correo: form.correo.trim(),
-            fechaNacimiento: form.fechaNacimiento,
+            fechaNacimiento: form.fechaNacimiento || null,
             tipoUsuario: form.tipoUsuario,
             region: regionEncontrada ? regionEncontrada.nombre : "",
             comuna: form.comuna,

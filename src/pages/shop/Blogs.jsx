@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { blogsIniciales } from '../../data/db.js'
+import { blogsIniciales } from '../../data/blogs.js'
 
 function Blogs() {
   return (

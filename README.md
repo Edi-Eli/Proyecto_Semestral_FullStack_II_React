@@ -46,8 +46,8 @@ cp .env.example .env
 # Local (backend en el equipo)
 VITE_API_BASE_URL=http://localhost:8080
 
-# Producción (backend en AWS detrás de un ALB con HTTPS)
-# VITE_API_BASE_URL=https://api.tudominio.cl
+# Producción (backend en Render con HTTPS)
+# VITE_API_BASE_URL=https://ferreteria-backend.onrender.com
 ```
 
 Al cambiar de entorno solo se edita `VITE_API_BASE_URL`; el código no cambia.

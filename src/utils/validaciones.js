@@ -49,13 +49,6 @@ function validarRun(run) {
   return dvIngresado === dvEsperado;
 }
 
-function validarRango(valor, min, max) {
-  if (valor === '' || valor === null || valor === undefined) return false;
-  const numero = Number(valor);
-  if (Number.isNaN(numero)) return false;
-  return numero >= min && numero <= max;
-}
-
 function validarContrasena(contrasena) {
   if (!requerido(contrasena)) return false;
   return String(contrasena).length >= 4 && String(contrasena).length <= 10;
@@ -69,42 +62,12 @@ function soloDecimales(valor) {
   return /^\d+(\.\d{1,2})?$/.test(String(valor).replace(',', '.'));
 }
 
-function validarProducto(prod) {
-  const errores = {};
-
-  if (!requerido(prod.codigo) || String(prod.codigo).trim().length < 3) {
-    errores.codigo = 'El código debe tener al menos 3 caracteres.';
-  }
-  if (!requerido(prod.nombre)) {
-    errores.nombre = 'El nombre es requerido.';
-  } else if (!maxCaracteres(prod.nombre, 100)) {
-    errores.nombre = 'El nombre no puede superar los 100 caracteres.';
-  }
-  if (!requerido(prod.descripcion) || !maxCaracteres(prod.descripcion, 500)) {
-    errores.descripcion = 'La descripción es opcional y máximo 500 caracteres.';
-  }
-  const precio = Number(String(prod.precio).replace(',', '.'));
-  if (prod.precio === '' || prod.precio === null || Number.isNaN(precio) || precio < 0) {
-    errores.precio = 'El precio debe ser un valor mayor o igual a 0.';
-  }
-  if (!requerido(prod.stock) || !soloEnteros(prod.stock) || Number(prod.stock) < 0) {
-    errores.stock = 'El stock debe ser un número entero mayor o igual a 0.';
-  }
-  if (!requerido(prod.categoriaId)) {
-    errores.categoriaId = 'La categoría es requerida.';
-  }
-
-  return { valido: Object.keys(errores).length === 0, errores };
-}
-
 export {
   requerido,
   maxCaracteres,
   esCorreoValido,
   validarRun,
-  validarRango,
   validarContrasena,
   soloEnteros,
   soloDecimales,
-  validarProducto,
 };

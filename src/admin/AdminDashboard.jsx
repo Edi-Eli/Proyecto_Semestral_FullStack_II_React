@@ -1,32 +1,41 @@
 /**
- * AdminDashboard — Resumen general
+ * AdminDashboard — Resumen por rol.
+ *
+ * Administrador: usa /api/reportes/resumen (totales reales, sin paginación).
+ * Vendedor: usa endpoints permitidos (pedidos, productos, ofertas y stock) y
+ * no llama a /resumen ni a usuarios para evitar 403.
  */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MetricCard from '../components/admin/MetricCard.jsx'
 import Loader from '../components/common/Loader.jsx'
 import MensajeError from '../components/common/MensajeError.jsx'
+import { useAuth } from '../context/authContext.js'
+import * as reportesApi from '../api/reportes.js'
 import * as pedidosApi from '../api/pedidos.js'
 import * as productosApi from '../api/productos.js'
-import * as usuariosApiReal from '../api/usuarios.js'
-import * as usuariosMock from '../utils/mocks/usuarios.mock.js'
-import { formatearPrecioCLP } from '../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../utils/formato.js'
 
-const USAR_MOCK = (import.meta.env.VITE_USAR_MOCK ?? 'true') !== 'false'
-const usuariosApi = USAR_MOCK ? usuariosMock : usuariosApiReal
+const ACCESOS_BASE = [
+  { to: '/admin/ordenes', icono: 'bi-receipt', etiqueta: 'Órdenes' },
+  { to: '/admin/productos', icono: 'bi-box-seam', etiqueta: 'Productos' },
+  { to: '/admin/productos/criticos', icono: 'bi-exclamation-triangle', etiqueta: 'Productos Críticos' },
+  { to: '/admin/ofertas', icono: 'bi-percent', etiqueta: 'Ofertas' },
+  { to: '/admin/cuentas', icono: 'bi-credit-card', etiqueta: 'Cuentas Corrientes' },
+  { to: '/admin/reportes', icono: 'bi-graph-up', etiqueta: 'Reportes' },
+  { to: '/admin/contacto', icono: 'bi-envelope', etiqueta: 'Contactos' },
+  { to: '/admin/perfil', icono: 'bi-person-circle', etiqueta: 'Perfil' },
+]
 
-const ACCESOS = [
-  { to: '/admin', icono: 'bi-speedometer2', etiqueta: 'Dashboard', descripcion: 'Resumen general del sistema' },
-  { to: '/admin/ordenes', icono: 'bi-receipt', etiqueta: 'Órdenes', descripcion: 'Boletas y compras realizadas' },
-  { to: '/admin/productos', icono: 'bi-box-seam', etiqueta: 'Productos', descripcion: 'CRUD de productos' },
-  { to: '/admin/productos/criticos', icono: 'bi-exclamation-triangle', etiqueta: 'Productos Críticos', descripcion: 'Stock igual o bajo el crítico' },
-  { to: '/admin/categorias', icono: 'bi-tags', etiqueta: 'Categorías', descripcion: 'Nueva o editar categorías' },
-  { to: '/admin/usuarios', icono: 'bi-people', etiqueta: 'Usuarios', descripcion: 'CRUD de usuarios y roles' },
-  { to: '/admin/reportes', icono: 'bi-graph-up', etiqueta: 'Reportes', descripcion: 'Ventas, stock y estadísticas' },
-  { to: '/admin/perfil', icono: 'bi-person-circle', etiqueta: 'Perfil', descripcion: 'Actualizar datos del admin' },
+const ACCESOS_ADMIN = [
+  { to: '/admin/categorias', icono: 'bi-tags', etiqueta: 'Categorías' },
+  { to: '/admin/subcategorias', icono: 'bi-tags-fill', etiqueta: 'Subcategorías' },
+  { to: '/admin/usuarios', icono: 'bi-people', etiqueta: 'Usuarios' },
 ]
 
 export default function AdminDashboard() {
+  const { usuarioActivo } = useAuth()
+  const esAdmin = usuarioActivo?.tipoUsuario === 'Administrador'
   const [metricas, setMetricas] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
@@ -34,67 +43,114 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let vigente = true
-    Promise.all([
-      pedidosApi.listar(),
-      productosApi.listar({ page: 0, size: 1 }),
-      usuariosApi.listarUsuarios(),
-    ])
-      .then(([pedidos, paginaProductos, usuarios]) => {
+
+    const cargas = esAdmin
+      ? [reportesApi.resumen(), reportesApi.stock()]
+      : [
+          pedidosApi.listarPagina({ page: 0, size: 1 }),
+          productosApi.listar({ page: 0, size: 1 }),
+          productosApi.listarOfertas({ page: 0, size: 1 }),
+          reportesApi.stock(),
+        ]
+
+    Promise.allSettled(cargas)
+      .then((resultados) => {
         if (!vigente) return
-        const listaPedidos = Array.isArray(pedidos) ? pedidos : []
-        const recaudado = listaPedidos
-          .filter((p) => p.estado !== 'RECHAZADA')
-          .reduce((suma, p) => suma + Number(p.total || 0), 0)
-        setMetricas({
-          compras: listaPedidos.length,
-          productos: paginaProductos?.totalElements ?? 0,
-          usuarios: Array.isArray(usuarios) ? usuarios.length : 0,
-          recaudado,
-        })
+
+        if (esAdmin) {
+          const [resumenRes, stockRes] = resultados
+          if (resumenRes.status === 'rejected') {
+            setError(resumenRes.reason?.message || 'No se pudo cargar el resumen.')
+            setCargando(false)
+            return
+          }
+          const resumen = resumenRes.value
+          setMetricas({
+            compras: resumen.totalPedidos,
+            recaudado: resumen.recaudado,
+            productos: resumen.totalProductos,
+            usuarios: resumen.totalUsuarios,
+            criticos: stockRes.status === 'fulfilled' ? stockRes.value?.criticos?.length : null,
+          })
+        } else {
+          const [pedidosRes, productosRes, ofertasRes, stockRes] = resultados
+          const todasFallaron = resultados.every((r) => r.status === 'rejected')
+          if (todasFallaron) {
+            setError('No se pudieron cargar las métricas del panel.')
+            setCargando(false)
+            return
+          }
+          setMetricas({
+            compras: pedidosRes.status === 'fulfilled' ? pedidosRes.value.totalElements : null,
+            productos: productosRes.status === 'fulfilled' ? productosRes.value.totalElements : null,
+            ofertas: ofertasRes.status === 'fulfilled' ? ofertasRes.value.totalElements : null,
+            criticos: stockRes.status === 'fulfilled' ? stockRes.value?.criticos?.length : null,
+          })
+        }
+
         setError(null)
         setCargando(false)
       })
       .catch((err) => {
         if (!vigente) return
-        setError(err.message || 'No se pudo cargar el resumen.')
+        setError(err.message || 'No se pudieron cargar las métricas.')
         setCargando(false)
       })
+
     return () => {
       vigente = false
     }
-  }, [recargar])
+  }, [esAdmin, recargar])
 
   function reintentar() {
-    setCargando(true)
     setError(null)
+    setCargando(true)
     setRecargar((n) => n + 1)
   }
+
+  const accesos = esAdmin ? [...ACCESOS_BASE, ...ACCESOS_ADMIN] : ACCESOS_BASE
 
   return (
     <main className="admin-contenido">
       <h1>Dashboard</h1>
-      <p className="admin-saludo">Resumen general de Ferretería Los Maestros.</p>
+      <p className="admin-saludo">
+        {esAdmin ? 'Vista general de la tienda.' : 'Vista de gestión para el rol Vendedor.'}
+      </p>
 
-      {cargando && <Loader mensaje="Cargando resumen..." />}
+      {cargando && <Loader mensaje="Cargando métricas..." />}
+
       {!cargando && error && <MensajeError mensaje={error} onReintentar={reintentar} />}
 
       {!cargando && !error && metricas && (
-        <section className="tarjetas-resumen">
-          <MetricCard titulo="Compras" valor={metricas.compras} color="azul" />
-          <MetricCard titulo="Productos" valor={metricas.productos} color="verde" />
-          <MetricCard titulo="Usuarios" valor={metricas.usuarios} color="amarillo" />
-          <MetricCard titulo="Recaudado" valor={formatearPrecioCLP(metricas.recaudado)} color="azul" />
+        <section className="tarjetas-metricas">
+          {esAdmin ? (
+            <>
+              <MetricCard titulo="Compras" valor={metricas.compras} />
+              <MetricCard titulo="Recaudado" valor={formatearPrecioCLP(metricas.recaudado)} />
+              <MetricCard titulo="Productos" valor={metricas.productos} />
+              <MetricCard titulo="Usuarios" valor={metricas.usuarios} />
+              <MetricCard titulo="Stock crítico" valor={metricas.criticos ?? '—'} />
+            </>
+          ) : (
+            <>
+              <MetricCard titulo="Pedidos" valor={metricas.compras ?? '—'} />
+              <MetricCard titulo="Productos" valor={metricas.productos ?? '—'} />
+              <MetricCard titulo="Ofertas" valor={metricas.ofertas ?? '—'} />
+              <MetricCard titulo="Stock crítico" valor={metricas.criticos ?? '—'} />
+            </>
+          )}
         </section>
       )}
 
-      <section className="accesos-grid">
-        {ACCESOS.map((acceso) => (
-          <Link key={acceso.to} to={acceso.to} className="acceso-rapido">
-            <i className={`bi ${acceso.icono} acceso-icono`}></i>
-            <h3>{acceso.etiqueta}</h3>
-            <p>{acceso.descripcion}</p>
-          </Link>
-        ))}
+      <section className="seccion-tabla">
+        <h2>Accesos rápidos</h2>
+        <div className="accesos-rapidos">
+          {accesos.map((acceso) => (
+            <Link key={acceso.to} to={acceso.to}>
+              <i className={`bi ${acceso.icono}`} aria-hidden="true"></i> {acceso.etiqueta}
+            </Link>
+          ))}
+        </div>
       </section>
     </main>
   )

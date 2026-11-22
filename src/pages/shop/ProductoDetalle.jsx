@@ -4,7 +4,8 @@ import * as productosApi from '../../api/productos.js'
 import { useCart } from '../../context/cartContext.js'
 import Loader from '../../components/common/Loader.jsx'
 import MensajeError from '../../components/common/MensajeError.jsx'
-import { formatearPrecioCLP, precioFinal, esGratis, imagenProducto } from '../../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../../utils/formato.js'
+import { precioFinal, esGratis, imagenProducto } from '../../utils/productoHelpers.js'
 
 export default function ProductoDetalle() {
   const { id } = useParams()

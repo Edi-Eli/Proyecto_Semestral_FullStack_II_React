@@ -19,9 +19,48 @@ const RUTA_BASE = '/api/usuarios'
 
 const ruta = (run) => `${RUTA_BASE}/${encodeURIComponent(run)}`
 
-/** Lista todos los usuarios (acepta arreglo, página Spring o HATEOAS). */
-export async function listarUsuarios() {
-  return extraerLista(await api.get(RUTA_BASE))
+function construirQuery(parametros = {}) {
+  const query = new URLSearchParams()
+  Object.entries(parametros).forEach(([clave, valor]) => {
+    if (valor !== undefined && valor !== null && valor !== '') {
+      query.append(clave, valor)
+    }
+  })
+  const texto = query.toString()
+  return texto ? `?${texto}` : ''
+}
+
+function normalizarPagina(datos) {
+  if (!datos) return { content: [], totalElements: 0, totalPages: 0, number: 0 }
+  const content = extraerLista(datos)
+  const page = datos.page || {}
+  return {
+    content,
+    totalElements: page.totalElements ?? content.length,
+    totalPages: page.totalPages ?? (content.length > 0 ? 1 : 0),
+    number: page.number ?? 0,
+  }
+}
+
+/** Lista usuarios con paginación opcional. */
+export async function listarUsuarios({ page = 0, size = 20, rol, activo, q } = {}) {
+  const query = construirQuery({ page, size, rol, activo, q })
+  return extraerLista(await api.get(`${RUTA_BASE}${query}`))
+}
+
+/** Recorre todas las páginas y devuelve el listado completo. */
+export async function listarUsuariosTodos({ size = 200, rol, activo, q } = {}) {
+  const primera = normalizarPagina(
+    await api.get(`${RUTA_BASE}${construirQuery({ page: 0, size, rol, activo, q })}`),
+  )
+  const usuarios = [...primera.content]
+  for (let page = 1; page < primera.totalPages; page += 1) {
+    const siguiente = normalizarPagina(
+      await api.get(`${RUTA_BASE}${construirQuery({ page, size, rol, activo, q })}`),
+    )
+    usuarios.push(...siguiente.content)
+  }
+  return usuarios
 }
 
 /** Obtiene un usuario por RUN. */
@@ -55,6 +94,7 @@ export async function cambiarEstado(run, activo) {
 
 export default {
   listarUsuarios,
+  listarUsuariosTodos,
   obtenerUsuario,
   crearUsuario,
   actualizarUsuario,

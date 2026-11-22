@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as productosApi from '../api/productos.js'
-import { formatearPrecioCLP } from '../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../utils/formato.js'
+import { nombreCategoria } from '../utils/productoHelpers.js'
 import Loader from '../components/common/Loader.jsx'
 import MensajeError from '../components/common/MensajeError.jsx'
 
@@ -36,11 +37,6 @@ export default function AdminCriticos() {
     setError(null)
     setCargando(true)
     setRecargar((n) => n + 1)
-  }
-
-  function nombreCategoria(id) {
-    const cat = categorias.find((c) => Number(c.id) === Number(id))
-    return cat ? cat.nombre : '-'
   }
 
   return (
@@ -81,7 +77,7 @@ export default function AdminCriticos() {
                     <tr key={producto.id}>
                       <td>{producto.codigo}</td>
                       <td>{producto.nombre}</td>
-                      <td>{producto.categoriaNombre || nombreCategoria(producto.categoriaId)}</td>
+                      <td>{producto.categoriaNombre || nombreCategoria(categorias, producto.categoriaId)}</td>
                       <td className="stock-bajo">{producto.stock}</td>
                       <td>{producto.stockCritico}</td>
                       <td>{formatearPrecioCLP(producto.precio)}</td>

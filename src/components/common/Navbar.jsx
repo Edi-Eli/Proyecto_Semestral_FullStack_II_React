@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/authContext.js'
 import { useCart } from '../../context/cartContext.js'
 import * as productosApi from '../../api/productos.js'
-import { formatearPrecioCLP } from '../../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../../utils/formato.js'
 
 function Navbar() {
   const { usuarioActivo, logout } = useAuth()
@@ -109,6 +109,9 @@ function Navbar() {
             {usuarioActivo && (
               <li><NavLink to="/mis-pedidos" className={claseActivo}>Mis pedidos</NavLink></li>
             )}
+            {usuarioActivo && usuarioActivo.tipoUsuario !== 'Administrador' && (
+              <li><NavLink to="/mi-cuenta" className={claseActivo}>Mi cuenta</NavLink></li>
+            )}
           </ul>
 
           {pathname !== '/productos' && (
@@ -139,7 +142,8 @@ function Navbar() {
                 <li>
                   <span className="text-white fw-bold">
                     Hola, {usuarioActivo.nombre}
-                    {usuarioActivo.tipoUsuario === 'Administrador' && (
+                    {(usuarioActivo.tipoUsuario === 'Administrador' ||
+                      usuarioActivo.tipoUsuario === 'Vendedor') && (
                       <Link to="/admin" className="btn btn-outline-light btn-sm ms-2 text-decoration-none">
                         Panel
                       </Link>

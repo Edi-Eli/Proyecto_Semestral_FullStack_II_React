@@ -1,4 +1,4 @@
-import { formatearPrecioCLP } from '../../utils/productoHelpers.js'
+import { formatearPrecioCLP } from '../../utils/formato.js'
 
 const ETIQUETA_ENTREGA = { RETIRO: 'Retiro en tienda', DESPACHO: 'Despacho a domicilio' }
 const ETIQUETA_PAGO = { CONTADO: 'Contado', CUENTA_CORRIENTE: 'Cuenta corriente' }

@@ -4,7 +4,7 @@ import Loader from '../components/common/Loader.jsx'
 import MensajeError from '../components/common/MensajeError.jsx'
 import { requerido, maxCaracteres } from '../utils/validaciones.js'
 
-const FORM_VACIO = { nombre: '', imagen: '' }
+const FORM_VACIO = { nombre: '', imagenUrl: '' }
 
 function validarCategoria(campo, valor) {
   const v = String(valor).trim()
@@ -13,7 +13,7 @@ function validarCategoria(campo, valor) {
     if (!maxCaracteres(v, 50)) return 'El nombre no puede superar los 50 caracteres.'
     return ''
   }
-  if (campo === 'imagen') {
+  if (campo === 'imagenUrl') {
     if (v !== '' && !maxCaracteres(v, 200)) return 'La ruta de imagen es muy larga.'
     return ''
   }
@@ -82,7 +82,10 @@ export default function AdminCategorias() {
   }
 
   const editarCategoria = (categoria) => {
-    setForm({ nombre: categoria.nombre, imagen: categoria.imagen || '' })
+    setForm({
+      nombre: categoria.nombre,
+      imagenUrl: categoria.imagenUrl ?? categoria.imagen ?? '',
+    })
     setIdEditar(categoria.id)
     setErrores({})
     setTocado({})
@@ -112,7 +115,7 @@ export default function AdminCategorias() {
 
     const nuevosErrores = {
       nombre: validarCategoria('nombre', form.nombre),
-      imagen: validarCategoria('imagen', form.imagen),
+      imagenUrl: validarCategoria('imagenUrl', form.imagenUrl),
     }
     setErrores(nuevosErrores)
     if (Object.values(nuevosErrores).some((m) => m !== '')) return
@@ -128,7 +131,7 @@ export default function AdminCategorias() {
       return
     }
 
-    const datos = { nombre: form.nombre.trim(), imagen: form.imagen.trim() }
+    const datos = { nombre: form.nombre.trim(), imagenUrl: form.imagenUrl.trim() }
     try {
       setGuardando(true)
       setErrorAccion(null)
@@ -180,7 +183,7 @@ export default function AdminCategorias() {
                     <tr key={categoria.id}>
                       <td>{categoria.id}</td>
                       <td>{categoria.nombre}</td>
-                      <td>{categoria.imagen}</td>
+                      <td>{categoria.imagenUrl ?? categoria.imagen ?? ''}</td>
                       <td>
                         <button
                           type="button"
@@ -230,12 +233,12 @@ export default function AdminCategorias() {
                     id="imagen-categoria"
                     maxLength="200"
                     placeholder="/assets/images/..."
-                    value={form.imagen}
-                    onChange={handleChange('imagen')}
-                    onBlur={handleBlur('imagen')}
-                    className={mostrarError('imagen') ? 'input-error' : ''}
+                    value={form.imagenUrl}
+                    onChange={handleChange('imagenUrl')}
+                    onBlur={handleBlur('imagenUrl')}
+                    className={mostrarError('imagenUrl') ? 'input-error' : ''}
                   />
-                  <p className="mensaje-error">{mostrarError('imagen')}</p>
+                  <p className="mensaje-error">{mostrarError('imagenUrl')}</p>
                 </div>
 
                 <div className="botones-form">
